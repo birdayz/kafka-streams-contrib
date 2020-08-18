@@ -1,4 +1,4 @@
-package de.nerden.kafka.streams.processor.serde;
+package de.nerden.kafka.streams.serde;
 
 import java.nio.ByteBuffer;
 import org.apache.kafka.common.serialization.Deserializer;

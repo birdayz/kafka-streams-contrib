@@ -1,7 +1,6 @@
 package de.nerden.kafka.streams.processor;
 
-import de.nerden.kafka.streams.processor.processor.BatchingProcessor;
-import de.nerden.kafka.streams.processor.serde.KeyValueSerde;
+import de.nerden.kafka.streams.serde.KeyValueSerde;
 
 import java.util.Iterator;
 import java.util.List;

@@ -1,4 +1,4 @@
-package de.nerden.kafka.streams.processor.processor;
+package de.nerden.kafka.streams.processor;
 
 import java.time.Duration;
 import java.util.ArrayList;
