@@ -1,10 +1,8 @@
 package de.nerden.kafka.streams.processor;
 
 import de.nerden.kafka.streams.serde.KeyValueSerde;
-
 import java.util.Iterator;
 import java.util.List;
-
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.TestInputTopic;
