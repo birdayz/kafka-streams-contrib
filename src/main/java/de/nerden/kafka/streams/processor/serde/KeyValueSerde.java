@@ -18,20 +18,20 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
         new KeyValueDeserializer(keySerde.deserializer(), valueSerde.deserializer());
   }
 
-
   private class KeyValueDeserializer implements Deserializer<KeyValue<K, V>> {
 
     private final Deserializer<K> keyDeserializer;
     private final Deserializer<V> valueDeserializer;
 
-    public KeyValueDeserializer(Deserializer<K> keyDeserializer,
-        Deserializer<V> valueDeserializer) {
+    public KeyValueDeserializer(
+        Deserializer<K> keyDeserializer, Deserializer<V> valueDeserializer) {
 
       this.keyDeserializer = keyDeserializer;
       this.valueDeserializer = valueDeserializer;
     }
 
-    @Override public KeyValue<K, V> deserialize(String topic, byte[] data) {
+    @Override
+    public KeyValue<K, V> deserialize(String topic, byte[] data) {
 
       ByteBuffer b = ByteBuffer.wrap(data);
       int keyLength = b.getInt();
@@ -47,7 +47,6 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
     }
   }
 
-
   private class KeyValueSerializer implements Serializer<KeyValue<K, V>> {
 
     private final Serializer<K> keySerializer;
@@ -58,20 +57,27 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
       this.valueSerializer = valueSerializer;
     }
 
-    @Override public byte[] serialize(String topic, KeyValue<K, V> data) {
+    @Override
+    public byte[] serialize(String topic, KeyValue<K, V> data) {
       byte[] key = this.keySerializer.serialize(topic, data.key);
       byte[] value = this.valueSerializer.serialize(topic, data.value);
 
-      return ByteBuffer.allocate(key.length + value.length + 4 + 4).putInt(key.length).put(key)
-          .putInt(value.length).put(value).array();
+      return ByteBuffer.allocate(key.length + value.length + 4 + 4)
+          .putInt(key.length)
+          .put(key)
+          .putInt(value.length)
+          .put(value)
+          .array();
     }
   }
 
-  @Override public Serializer<KeyValue<K, V>> serializer() {
+  @Override
+  public Serializer<KeyValue<K, V>> serializer() {
     return this.keyValueSerializer;
   }
 
-  @Override public Deserializer<KeyValue<K, V>> deserializer() {
+  @Override
+  public Deserializer<KeyValue<K, V>> deserializer() {
     return this.keyValueDeserializer;
   }
 }

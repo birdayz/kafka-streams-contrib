@@ -15,15 +15,21 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
   private KeyValueStore<Long, KeyValue<K, V>> store;
   private ProcessorContext context;
 
-  @Override @SuppressWarnings("unchecked") public void init(final ProcessorContext context) {
+  @Override
+  @SuppressWarnings("unchecked")
+  public void init(final ProcessorContext context) {
     store = (KeyValueStore<Long, KeyValue<K, V>>) context.getStateStore("batch");
     this.context = context;
-    this.context.schedule(Duration.ofMillis(10000), PunctuationType.WALL_CLOCK_TIME, timestamp -> {
-      forwardBatch();
-    });
+    this.context.schedule(
+        Duration.ofMillis(10000),
+        PunctuationType.WALL_CLOCK_TIME,
+        timestamp -> {
+          forwardBatch();
+        });
   }
 
-  @Override public void process(final K key, final V value) {
+  @Override
+  public void process(final K key, final V value) {
     this.store.put(context.offset(), KeyValue.pair(key, value));
   }
 
@@ -34,9 +40,10 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
 
     List<KeyValue<K, V>> res = new ArrayList<>();
 
-    all.forEachRemaining(longKeyValueKeyValue -> {
-      res.add(longKeyValueKeyValue.value);
-    });
+    all.forEachRemaining(
+        longKeyValueKeyValue -> {
+          res.add(longKeyValueKeyValue.value);
+        });
 
     all.close();
 
@@ -46,13 +53,14 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
 
     KeyValueIterator<Long, KeyValue<K, V>> i = store.all();
 
-    i.forEachRemaining(longKeyValueKeyValue -> {
-      store.delete(longKeyValueKeyValue.key);
-    });
+    i.forEachRemaining(
+        longKeyValueKeyValue -> {
+          store.delete(longKeyValueKeyValue.key);
+        });
 
     i.close();
   }
 
-  @Override public void close() {
-  }
+  @Override
+  public void close() {}
 }

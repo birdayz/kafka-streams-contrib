@@ -25,11 +25,15 @@ public class BatchingProcessorTest {
   private Processor<String, String> processor;
   MockProcessorContext context;
 
-  @Before public void setup() {
+  @Before
+  public void setup() {
     processor = new BatchingProcessor<>();
-    StoreBuilder<KeyValueStore<Long, KeyValue<String, String>>> store = Stores
-        .keyValueStoreBuilder(Stores.inMemoryKeyValueStore("batch"), Serdes.Long(),
-            new KeyValueSerde<>(Serdes.String(), Serdes.String())).withLoggingDisabled();
+    StoreBuilder<KeyValueStore<Long, KeyValue<String, String>>> store =
+        Stores.keyValueStoreBuilder(
+                Stores.inMemoryKeyValueStore("batch"),
+                Serdes.Long(),
+                new KeyValueSerde<>(Serdes.String(), Serdes.String()))
+            .withLoggingDisabled();
 
     KeyValueStore<Long, KeyValue<String, String>> s = store.build();
 
@@ -40,16 +44,13 @@ public class BatchingProcessorTest {
     processor.init(context);
   }
 
-
-  @Test public void TestStuff() {
-    //    inputTopic.pipeInput("testKey", "testValue");
-    //    testDriver.advanceWallClockTime(Duration.ofSeconds(15));
+  @Test
+  public void TestStuff() {
     context.setOffset(0L);
     processor.process("abc", "def");
     context.scheduledPunctuators().get(0).getPunctuator().punctuate(0L);
+
     Iterator<CapturedForward> i = context.forwarded().iterator();
     Assert.assertEquals(List.of(KeyValue.pair("abc", "def")), i.next().keyValue().value);
-
   }
-
 }
