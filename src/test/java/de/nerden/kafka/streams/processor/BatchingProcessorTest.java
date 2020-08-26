@@ -26,7 +26,7 @@ public class BatchingProcessorTest {
 
   @Before
   public void setup() {
-    processor = new BatchingProcessor<>();
+    processor = new BatchingProcessor<>(10);
     StoreBuilder<KeyValueStore<Long, KeyValue<String, String>>> store =
         Stores.keyValueStoreBuilder(
                 Stores.inMemoryKeyValueStore("batch"),
