@@ -39,11 +39,7 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
 
     this.context = context;
     this.context.schedule(
-        Duration.ofMillis(10000),
-        PunctuationType.WALL_CLOCK_TIME,
-        timestamp -> {
-          forwardBatch();
-        });
+        Duration.ofMillis(10000), PunctuationType.WALL_CLOCK_TIME, timestamp -> forwardBatch());
   }
 
   @Override
