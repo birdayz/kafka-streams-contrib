@@ -73,14 +73,7 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
       context.forward(null, batch);
     }
 
-    KeyValueIterator<Long, KeyValue<K, V>> i = store.all();
-
-    i.forEachRemaining(
-        longKeyValueKeyValue -> {
-          store.delete(longKeyValueKeyValue.key);
-        });
-
-    i.close();
+    sorted.forEach(item -> store.delete(item.key));
   }
 
   @Override
