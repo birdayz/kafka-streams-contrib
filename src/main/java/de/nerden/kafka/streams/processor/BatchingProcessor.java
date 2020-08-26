@@ -45,6 +45,7 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
   @Override
   public void process(final K key, final V value) {
     this.store.put(context.offset(), KeyValue.pair(key, value));
+    this.currentBatchSize++;
 
     if (this.currentBatchSize >= this.maxBatchSize) {
       forwardBatch();
@@ -70,6 +71,7 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
     }
 
     sorted.forEach(item -> store.delete(item.key));
+    this.currentBatchSize = 0L;
   }
 
   @Override
