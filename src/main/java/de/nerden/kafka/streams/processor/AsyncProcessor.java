@@ -44,6 +44,10 @@ public class AsyncProcessor<K, V> implements Processor<K, V> {
 
     i.forEachRemaining(
         kv -> {
+          if (this.store.get(kv.key) != null) {
+            // Skip if inflight
+            return;
+          }
           // Does not work, must store offset?          Long off = this.context.offset();
           this.inflight.add(kv.key);
           executor.execute(
