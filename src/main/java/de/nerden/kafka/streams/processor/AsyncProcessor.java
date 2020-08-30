@@ -1,6 +1,9 @@
 package de.nerden.kafka.streams.processor;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -17,37 +20,53 @@ public class AsyncProcessor<K, V> implements Processor<K, V> {
 
   private Consumer<KeyValue<K, V>> fn;
 
+  private List<Long> inflight;
+
   public AsyncProcessor(Consumer<KeyValue<K, V>> fn) {
     this.fn = fn;
     this.executor = Executors.newCachedThreadPool();
+    this.inflight = Collections.synchronizedList(new ArrayList<>());
   }
 
-  private KeyValueStore<K, V> store;
+  private KeyValueStore<Long, KeyValue<K, V>> store;
+  private ProcessorContext context;
 
   @Override
   public void init(ProcessorContext context) {
-    store = (KeyValueStore<K, V>) context.getStateStore("batch");
+    store = (KeyValueStore<Long, KeyValue<K, V>>) context.getStateStore("batch");
+    this.context = context;
     context.schedule(
         Duration.ofMillis(1000), PunctuationType.WALL_CLOCK_TIME, timestamp -> this.processAsync());
   }
 
   private void processAsync() {
-    KeyValueIterator<K, V> i = this.store.all();
+    KeyValueIterator<Long, KeyValue<K, V>> i = this.store.all();
 
     i.forEachRemaining(
-        kv ->
-            executor.execute(
-                () -> {
-                  this.fn.accept(kv);
-                  this.store.delete(kv.key);
-                }));
+        kv -> {
+          // Does not work, must store offset?          Long off = this.context.offset();
+          this.inflight.add(kv.key);
+          executor.execute(
+              () -> {
+                this.fn.accept(kv.value);
+                this.store.delete(kv.key);
+                this.inflight.remove(kv.key);
+              });
+        });
 
     i.close();
   }
 
   @Override
   public void process(K key, V value) {
-    this.store.put(key, value);
+    this.store.put(this.context.offset(), KeyValue.pair(key, value));
+    this.inflight.add(this.context.offset());
+    executor.execute(
+        () -> {
+          this.fn.accept(KeyValue.pair(key, value));
+          this.store.delete(this.context.offset());
+          this.inflight.remove(this.context.offset());
+        });
   }
 
   @Override
