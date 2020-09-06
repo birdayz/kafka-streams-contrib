@@ -1,6 +1,9 @@
 package de.nerden.kafka.streams.processor;
 
 import de.nerden.kafka.streams.serde.KeyValueSerde;
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Consumer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
@@ -9,10 +12,6 @@ import org.apache.kafka.streams.processor.ProcessorSupplier;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
-
-import java.util.Collections;
-import java.util.Set;
-import java.util.function.Consumer;
 
 public class AsyncProcessorSupplier<K, V> implements ProcessorSupplier<K, V> {
 

@@ -1,13 +1,12 @@
 package de.nerden.kafka.streams.examples;
 
 import de.nerden.kafka.streams.processor.AsyncProcessorSupplier;
+import java.util.Properties;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.errors.LogAndFailExceptionHandler;
-
-import java.util.Properties;
 
 public class AsyncProcessorExample {
 

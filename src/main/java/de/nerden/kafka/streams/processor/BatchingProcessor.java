@@ -15,7 +15,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 // TODO batch by key
 public class BatchingProcessor<K, V> implements Processor<K, V> {
 
- private KeyValueStore<Long, KeyValue<K, V>> store;
+  private KeyValueStore<Long, KeyValue<K, V>> store;
   private ProcessorContext context;
 
   private long maxBatchSize;

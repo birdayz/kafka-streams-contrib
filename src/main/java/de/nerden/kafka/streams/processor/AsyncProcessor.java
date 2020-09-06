@@ -1,5 +1,6 @@
 package de.nerden.kafka.streams.processor;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,9 +9,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
