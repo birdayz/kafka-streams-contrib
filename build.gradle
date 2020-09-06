@@ -4,16 +4,20 @@ plugins {
 }
 
 group 'de.nerden'
-version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
+def kafkaStreamsVersion = "2.6.0"
+
 dependencies {
-    implementation group: 'org.apache.kafka', name: 'kafka-streams', version: '2.6.0'
-    testImplementation group: 'org.apache.kafka', name: 'kafka-streams-test-utils', version: '2.6.0'
+    implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+
+    implementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaStreamsVersion
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+
+    testImplementation group: 'org.apache.kafka', name: 'kafka-streams-test-utils', version: kafkaStreamsVersion
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 
