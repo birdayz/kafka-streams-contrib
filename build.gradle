@@ -11,6 +11,12 @@ repositories {
 }
 
 publishing {
+  publications {
+      kafkaStreamsContrib(MavenPublication) {
+          from components.java
+      }
+  }
+
   repositories {
     maven {
       name = "GitHubPackages"
