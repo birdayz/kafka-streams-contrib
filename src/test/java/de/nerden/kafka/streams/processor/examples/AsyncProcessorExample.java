@@ -1,4 +1,4 @@
-package de.nerden.kafka.streams.examples;
+package de.nerden.kafka.streams.processor.examples;
 
 import de.nerden.kafka.streams.processor.AsyncProcessorSupplier;
 import java.util.Properties;
@@ -20,7 +20,13 @@ public class AsyncProcessorExample {
     t.addProcessor(
         "async",
         new AsyncProcessorSupplier<>(
-            "data-backlog", Serdes.String(), Serdes.String(), System.out::println),
+            "inflight",
+            "failed",
+            Serdes.String(),
+            Serdes.String(),
+            stringStringKeyValue -> {
+              throw new RuntimeException("fail");
+            }),
         "data");
 
     KafkaStreams streams = new KafkaStreams(t, getProperties());
@@ -29,8 +35,10 @@ public class AsyncProcessorExample {
 
   private static Properties getProperties() {
     Properties props = new Properties();
+    props.put("request.timeout.ms", 60000);
     props.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
+    props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 0L);
     props.put(
         StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,
         LogAndFailExceptionHandler.class.getName());

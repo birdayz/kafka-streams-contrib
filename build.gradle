@@ -11,22 +11,22 @@ repositories {
 }
 
 publishing {
-  publications {
-      kafkaStreamsContrib(MavenPublication) {
-          from components.java
-      }
-  }
-
-  repositories {
-    maven {
-      name = "GitHubPackages"
-      url = "https://maven.pkg.github.com/birdayz/kafka-streams-contrib"
-      credentials {
-        username = System.getenv("GITHUB_ACTOR")
-        password = System.getenv("GITHUB_TOKEN")
-      }
+    publications {
+        kafkaStreamsContrib(MavenPublication) {
+            from components.java
+        }
     }
-  }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/birdayz/kafka-streams-contrib"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
 
 def kafkaStreamsVersion = "2.6.0"
@@ -35,10 +35,19 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
 
     implementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaStreamsVersion
-    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+
+    compile group: 'javax.json', name: 'javax.json-api', version: '1.1.4'
+    compile group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
 
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams-test-utils', version: kafkaStreamsVersion
     testImplementation group: 'junit', name: 'junit', version: '4.12'
+
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
+
+    testImplementation "com.google.truth:truth:1.1"
 }
 
 googleJavaFormat {
