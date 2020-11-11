@@ -10,10 +10,15 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
+import org.junit.Before;
 
 public class AsyncProcessorTest extends TestCase {
 
-  public void testProcess() {
+  TopologyTestDriver testDriver;
+  private TestInputTopic<String, String> inputTopic;
+
+  @Before
+  public void setUp() {
     Topology topology = new Topology();
     topology.addSource(
         "sourceProcessor",
@@ -47,15 +52,17 @@ public class AsyncProcessorTest extends TestCase {
     Properties props = new Properties();
     props.put(StreamsConfig.APPLICATION_ID_CONFIG, "test");
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
-    TopologyTestDriver testDriver = new TopologyTestDriver(topology, props);
+    testDriver = new TopologyTestDriver(topology, props);
 
-    final TestInputTopic<String, String> in =
+    inputTopic =
         testDriver.createInputTopic(
             "input-topic", Serdes.String().serializer(), Serdes.String().serializer());
+  }
 
+  public void testProcess() {
     String key = "test-key";
     String val = "test-value";
-    in.pipeInput(key, val);
+    inputTopic.pipeInput(key, val);
 
     final KeyValueStore<Long, KeyValue<String, String>> keyValueStore =
         testDriver.getKeyValueStore("async-failed");
