@@ -2,7 +2,11 @@ plugins {
     id 'java'
     id 'com.github.sherter.google-java-format' version '0.9'
     id 'maven-publish'
+    id "com.google.protobuf" version "0.8.13"
+
 }
+
+apply plugin: 'idea'
 
 group 'de.nerden'
 
@@ -36,21 +40,36 @@ dependencies {
 
     implementation group: 'org.apache.kafka', name: 'kafka-streams', version: kafkaStreamsVersion
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
 
-    compile group: 'javax.json', name: 'javax.json-api', version: '1.1.4'
-    compile group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
+    implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'
+    implementation group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
 
     testImplementation group: 'org.apache.kafka', name: 'kafka-streams-test-utils', version: kafkaStreamsVersion
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
-
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.7.0'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.0'
-
     testImplementation "com.google.truth:truth:1.1"
+
+    implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.13.0'
 }
 
 googleJavaFormat {
     toolVersion = '1.8'
     options style: 'GOOGLE'
+}
+
+protobuf {
+    // Configure the protoc executable
+    protoc {
+        // Download from repositories
+        artifact = 'com.google.protobuf:protoc:3.0.0'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
 }

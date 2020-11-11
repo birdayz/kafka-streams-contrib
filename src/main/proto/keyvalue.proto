@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package protobuf;
+
+option java_package = "de.nerden.kafka.streams";
+option java_multiple_files = true;
+
+message KeyValue {
+    bytes key = 1;
+    bytes value = 2;
+}

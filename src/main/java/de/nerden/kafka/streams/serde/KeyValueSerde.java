@@ -1,6 +1,7 @@
 package de.nerden.kafka.streams.serde;
 
-import java.nio.ByteBuffer;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
@@ -32,18 +33,15 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
 
     @Override
     public KeyValue<K, V> deserialize(String topic, byte[] data) {
-
-      ByteBuffer b = ByteBuffer.wrap(data);
-      int keyLength = b.getInt();
-      byte[] keyData = new byte[keyLength];
-      b.get(keyData);
-      K key = this.keyDeserializer.deserialize(topic, keyData);
-
-      int valueLength = b.getInt();
-      byte[] valueData = new byte[valueLength];
-      b.get(valueData);
-      V value = this.valueDeserializer.deserialize(topic, valueData);
-      return KeyValue.pair(key, value);
+      try {
+        final de.nerden.kafka.streams.KeyValue keyValue =
+            de.nerden.kafka.streams.KeyValue.parseFrom(data);
+        return KeyValue.pair(
+            this.keyDeserializer.deserialize(topic, keyValue.getKey().toByteArray()),
+            this.valueDeserializer.deserialize(topic, keyValue.getValue().toByteArray()));
+      } catch (InvalidProtocolBufferException e) {
+        return null;
+      }
     }
   }
 
@@ -62,12 +60,11 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
       byte[] key = this.keySerializer.serialize(topic, data.key);
       byte[] value = this.valueSerializer.serialize(topic, data.value);
 
-      return ByteBuffer.allocate(key.length + value.length + 4 + 4)
-          .putInt(key.length)
-          .put(key)
-          .putInt(value.length)
-          .put(value)
-          .array();
+      return de.nerden.kafka.streams.KeyValue.newBuilder()
+          .setKey(ByteString.copyFrom(key))
+          .setValue(ByteString.copyFrom(value))
+          .build()
+          .toByteArray();
     }
   }
 
