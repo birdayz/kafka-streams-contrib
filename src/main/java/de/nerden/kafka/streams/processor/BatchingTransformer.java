@@ -7,25 +7,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.processor.Processor;
+import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.PunctuationType;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-public class BatchingProcessor<K, V> implements Processor<K, V> {
+public class BatchingTransformer<K, V> implements Transformer<K, V, List<KeyValue<K, V>>> {
 
   private KeyValueStore<BatchEntryKey<K>, V> store;
   private ProcessorContext context;
 
   private Map<K, Long> entries;
 
-  public BatchingProcessor() {}
+  private String storeName;
+
+  public BatchingTransformer(String storeName) {
+    this.storeName = storeName;
+  }
 
   @Override
   @SuppressWarnings("unchecked")
   public void init(final ProcessorContext context) {
-    store = (KeyValueStore<BatchEntryKey<K>, V>) context.getStateStore("batch");
+    store = (KeyValueStore<BatchEntryKey<K>, V>) context.getStateStore(storeName);
     entries = new HashMap<>();
 
     final KeyValueIterator<BatchEntryKey<K>, V> all = this.store.all();
@@ -38,9 +42,10 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
   }
 
   @Override
-  public void process(final K key, final V value) {
+  public List<KeyValue<K, V>> transform(K key, V value) {
     this.store.put(new BatchEntryKey<>(key, this.context.offset()), value);
     this.entries.merge(key, 1L, Long::sum);
+    return null;
   }
 
   private void forwardBatch() {

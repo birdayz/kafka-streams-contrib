@@ -7,12 +7,12 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
 
-public class BatchEntryKeySerde<K> implements Serde<BatchEntryKey<K>> {
+public class BatchKeySerde<K> implements Serde<BatchEntryKey<K>> {
 
   private BatchEntryKeySerializer serializer;
   private BatchEntryKeyDeserializer deserializer;
 
-  public BatchEntryKeySerde(Serde<K> keySerde) {
+  public BatchKeySerde(Serde<K> keySerde) {
     this.deserializer = new BatchEntryKeyDeserializer(keySerde.deserializer());
     this.serializer = new BatchEntryKeySerializer(keySerde.serializer());
   }
@@ -29,8 +29,8 @@ public class BatchEntryKeySerde<K> implements Serde<BatchEntryKey<K>> {
     @Override
     public BatchEntryKey<K> deserialize(String topic, byte[] data) {
       try {
-        final de.nerden.kafka.streams.proto.BatchEntryKey proto =
-            de.nerden.kafka.streams.proto.BatchEntryKey.parseFrom(data);
+        final de.nerden.kafka.streams.proto.BatchKey proto =
+            de.nerden.kafka.streams.proto.BatchKey.parseFrom(data);
 
         return new BatchEntryKey<>(
             keyDeserializer.deserialize(topic, proto.getOriginalKey().toByteArray()),
@@ -52,8 +52,8 @@ public class BatchEntryKeySerde<K> implements Serde<BatchEntryKey<K>> {
     @Override
     public byte[] serialize(String topic, BatchEntryKey<K> data) {
       byte[] originKey = this.keySerializer.serialize(topic, data.getKey());
-      de.nerden.kafka.streams.proto.BatchEntryKey proto =
-          de.nerden.kafka.streams.proto.BatchEntryKey.newBuilder()
+      de.nerden.kafka.streams.proto.BatchKey proto =
+          de.nerden.kafka.streams.proto.BatchKey.newBuilder()
               .setOriginalKey(ByteString.copyFrom(originKey))
               .setOffset(data.getOffset())
               .build();

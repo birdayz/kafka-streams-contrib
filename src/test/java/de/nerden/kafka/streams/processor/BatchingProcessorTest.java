@@ -1,19 +1,20 @@
 package de.nerden.kafka.streams.processor;
 
-import de.nerden.kafka.streams.BatchEntryKey;
-import de.nerden.kafka.streams.serde.BatchEntryKeySerde;
+import de.nerden.kafka.streams.MoreTransformers;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
+import org.apache.kafka.streams.kstream.Materialized;
+import org.apache.kafka.streams.kstream.Transformer;
+import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.kafka.streams.processor.MockProcessorContext;
 import org.apache.kafka.streams.processor.MockProcessorContext.CapturedForward;
-import org.apache.kafka.streams.processor.Processor;
+import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.StoreBuilder;
-import org.apache.kafka.streams.state.Stores;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,34 +23,37 @@ public class BatchingProcessorTest {
 
   private TestInputTopic<String, String> inputTopic;
   private TopologyTestDriver testDriver;
-  private Processor<String, String> processor;
+  private Transformer<String, String, List<KeyValue<String, String>>> processor;
   MockProcessorContext context;
 
   @Before
   public void setup() {
-    processor = new BatchingProcessor<>();
-    StoreBuilder<KeyValueStore<BatchEntryKey<String>, String>> store =
-        Stores.keyValueStoreBuilder(
-                Stores.inMemoryKeyValueStore("batch"),
-                new BatchEntryKeySerde<>(Serdes.String()),
-                Serdes.String())
-            .withLoggingDisabled();
-
-    final KeyValueStore<BatchEntryKey<String>, String> s = store.build();
+    final TransformerSupplier<String, String, List<KeyValue<String, String>>> batch =
+        MoreTransformers.Batch(
+            Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("batch")
+                .withKeySerde(Serdes.String())
+                .withValueSerde(Serdes.String()));
 
     context = new MockProcessorContext();
 
-    s.init(context, s);
-    context.register(s, null);
+    batch
+        .stores()
+        .forEach(
+            storeBuilder -> {
+              final StateStore store = storeBuilder.build();
+              store.init(context, store);
+              context.register(store, null);
+            });
+    processor = batch.get();
     processor.init(context);
   }
 
   @Test
   public void TestStuff() {
     context.setOffset(0L);
-    processor.process("abc", "def");
+    processor.transform("abc", "def");
     context.setOffset(1L);
-    processor.process("abc", "def2");
+    processor.transform("abc", "def2");
     context.scheduledPunctuators().get(0).getPunctuator().punctuate(0L);
 
     Iterator<CapturedForward> i = context.forwarded().iterator();
