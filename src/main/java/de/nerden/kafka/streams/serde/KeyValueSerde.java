@@ -34,8 +34,8 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
     @Override
     public KeyValue<K, V> deserialize(String topic, byte[] data) {
       try {
-        final de.nerden.kafka.streams.KeyValue keyValue =
-            de.nerden.kafka.streams.KeyValue.parseFrom(data);
+        final de.nerden.kafka.streams.proto.KeyValue keyValue =
+            de.nerden.kafka.streams.proto.KeyValue.parseFrom(data);
         return KeyValue.pair(
             this.keyDeserializer.deserialize(topic, keyValue.getKey().toByteArray()),
             this.valueDeserializer.deserialize(topic, keyValue.getValue().toByteArray()));
@@ -60,7 +60,7 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
       byte[] key = this.keySerializer.serialize(topic, data.key);
       byte[] value = this.valueSerializer.serialize(topic, data.value);
 
-      return de.nerden.kafka.streams.KeyValue.newBuilder()
+      return de.nerden.kafka.streams.proto.KeyValue.newBuilder()
           .setKey(ByteString.copyFrom(key))
           .setValue(ByteString.copyFrom(value))
           .build()

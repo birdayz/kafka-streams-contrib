@@ -1,6 +1,7 @@
 package de.nerden.kafka.streams.processor;
 
-import de.nerden.kafka.streams.serde.KeyValueSerde;
+import de.nerden.kafka.streams.BatchEntryKey;
+import de.nerden.kafka.streams.serde.BatchEntryKeySerde;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.kafka.common.serialization.Serdes;
@@ -26,15 +27,15 @@ public class BatchingProcessorTest {
 
   @Before
   public void setup() {
-    processor = new BatchingProcessor<>(10);
-    StoreBuilder<KeyValueStore<Long, KeyValue<String, String>>> store =
+    processor = new BatchingProcessor<>();
+    StoreBuilder<KeyValueStore<BatchEntryKey<String>, String>> store =
         Stores.keyValueStoreBuilder(
                 Stores.inMemoryKeyValueStore("batch"),
-                Serdes.Long(),
-                new KeyValueSerde<>(Serdes.String(), Serdes.String()))
+                new BatchEntryKeySerde<>(Serdes.String()),
+                Serdes.String())
             .withLoggingDisabled();
 
-    KeyValueStore<Long, KeyValue<String, String>> s = store.build();
+    final KeyValueStore<BatchEntryKey<String>, String> s = store.build();
 
     context = new MockProcessorContext();
 
@@ -47,9 +48,14 @@ public class BatchingProcessorTest {
   public void TestStuff() {
     context.setOffset(0L);
     processor.process("abc", "def");
+    context.setOffset(1L);
+    processor.process("abc", "def2");
     context.scheduledPunctuators().get(0).getPunctuator().punctuate(0L);
 
     Iterator<CapturedForward> i = context.forwarded().iterator();
-    Assert.assertEquals(List.of(KeyValue.pair("abc", "def")), i.next().keyValue().value);
+    Assert.assertTrue(i.hasNext());
+    Assert.assertEquals(
+        List.of(KeyValue.pair("abc", "def"), KeyValue.pair("abc", "def2")),
+        i.next().keyValue().value);
   }
 }

@@ -1,10 +1,11 @@
 package de.nerden.kafka.streams.processor;
 
+import de.nerden.kafka.streams.BatchEntryKey;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
@@ -12,30 +13,23 @@ import org.apache.kafka.streams.processor.PunctuationType;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-// TODO batch by key
 public class BatchingProcessor<K, V> implements Processor<K, V> {
 
-  private KeyValueStore<Long, KeyValue<K, V>> store;
+  private KeyValueStore<BatchEntryKey<K>, V> store;
   private ProcessorContext context;
 
-  private long maxBatchSize;
+  private Map<K, Long> entries;
 
-  private long currentBatchSize;
-
-  public BatchingProcessor(long maxBatchSize) {
-    this.maxBatchSize = maxBatchSize;
-  }
+  public BatchingProcessor() {}
 
   @Override
   @SuppressWarnings("unchecked")
   public void init(final ProcessorContext context) {
-    store = (KeyValueStore<Long, KeyValue<K, V>>) context.getStateStore("batch");
+    store = (KeyValueStore<BatchEntryKey<K>, V>) context.getStateStore("batch");
+    entries = new HashMap<>();
 
-    final KeyValueIterator<Long, KeyValue<K, V>> all = this.store.all();
-    all.forEachRemaining(
-        longKeyValueKeyValue -> {
-          this.currentBatchSize++;
-        });
+    final KeyValueIterator<BatchEntryKey<K>, V> all = this.store.all();
+    all.forEachRemaining(item -> this.entries.merge(item.key.getKey(), 1L, Long::sum));
     all.close();
 
     this.context = context;
@@ -45,34 +39,31 @@ public class BatchingProcessor<K, V> implements Processor<K, V> {
 
   @Override
   public void process(final K key, final V value) {
-    this.store.put(context.offset(), KeyValue.pair(key, value));
-    this.currentBatchSize++;
-
-    if (this.currentBatchSize >= this.maxBatchSize) {
-      forwardBatch();
-    }
+    this.store.put(new BatchEntryKey<>(key, this.context.offset()), value);
+    this.entries.merge(key, 1L, Long::sum);
   }
 
   private void forwardBatch() {
-    final KeyValueIterator<Long, KeyValue<K, V>> all = this.store.all();
+    this.entries.forEach(
+        (key, offset) -> {
+          final KeyValueIterator<BatchEntryKey<K>, V> range =
+              this.store.range(
+                  new BatchEntryKey<>(key, 0L), new BatchEntryKey<>(key, Long.MAX_VALUE));
 
-    List<KeyValue<Long, KeyValue<K, V>>> sorted = new ArrayList<>();
+          List<KeyValue<K, V>> batch = new ArrayList<>();
+          range.forEachRemaining(
+              item -> {
+                batch.add(KeyValue.pair(item.key.getKey(), item.value));
 
-    all.forEachRemaining(sorted::add);
-    all.close();
+                // No idea if this allowed while we're in the iterator
+                this.store.delete(item.key);
+              });
 
-    // Sort by offset, because iterating on the store does not guarantee ordering
-    sorted.sort(Comparator.comparing(o -> o.key));
+          range.close();
+          this.context.forward(key, batch);
+        });
 
-    List<KeyValue<K, V>> batch =
-        sorted.stream().map(item -> item.value).collect(Collectors.toList());
-
-    if (!batch.isEmpty()) {
-      context.forward(null, batch);
-    }
-
-    sorted.forEach(item -> store.delete(item.key));
-    this.currentBatchSize = 0L;
+    this.entries.clear();
   }
 
   @Override
