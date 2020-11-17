@@ -6,8 +6,6 @@ import java.util.List;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.TestInputTopic;
-import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
@@ -21,8 +19,6 @@ import org.junit.Test;
 
 public class BatchingProcessorTest {
 
-  private TestInputTopic<String, String> inputTopic;
-  private TopologyTestDriver testDriver;
   private Transformer<String, String, KeyValue<String, List<String>>> processor;
   MockProcessorContext context;
 
@@ -32,7 +28,8 @@ public class BatchingProcessorTest {
         MoreTransformers.Batch(
             Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("batch")
                 .withKeySerde(Serdes.String())
-                .withValueSerde(Serdes.String()));
+                .withValueSerde(Serdes.String())
+                .withLoggingDisabled());
 
     context = new MockProcessorContext();
 
@@ -49,7 +46,7 @@ public class BatchingProcessorTest {
   }
 
   @Test
-  public void TestStuff() {
+  public void TestSunshineCase() {
     context.setOffset(0L);
     processor.transform("abc", "def");
     context.setOffset(1L);

@@ -23,6 +23,9 @@ public class MoreTransformers {
     }
 
     return new BatchTransformerSupplier<>(
-        storeName, materializedI.keySerde(), materializedI.valueSerde());
+        storeName,
+        materializedI.keySerde(),
+        materializedI.valueSerde(),
+        materializedI.loggingEnabled());
   }
 }
