@@ -11,7 +11,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 
 public class MoreTransformers {
 
-  public static <K, V> TransformerSupplier<K, V, List<KeyValue<K, V>>> Batch(
+  public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(
       Materialized<K, V, KeyValueStore<Bytes, byte[]>> materialized) {
     final MaterializedInternal<K, V, KeyValueStore<Bytes, byte[]>> materializedI =
         new MaterializedInternal<>(materialized);

@@ -3,6 +3,7 @@ package de.nerden.kafka.streams.processor;
 import de.nerden.kafka.streams.serde.BatchKeySerde;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.KeyValue;
@@ -12,7 +13,7 @@ import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 public class BatchTransformerSupplier<K, V>
-    implements TransformerSupplier<K, V, List<KeyValue<K, V>>> {
+    implements TransformerSupplier<K, V, KeyValue<K, List<V>>> {
 
   private String storeName;
   private Serde<K> keySerde;
@@ -25,7 +26,7 @@ public class BatchTransformerSupplier<K, V>
   }
 
   @Override
-  public Transformer<K, V, List<KeyValue<K, V>>> get() {
+  public Transformer<K, V, KeyValue<K, List<V>>> get() {
     return new BatchingTransformer<>(this.storeName);
   }
 
@@ -36,6 +37,6 @@ public class BatchTransformerSupplier<K, V>
                 Stores.inMemoryKeyValueStore(storeName),
                 new BatchKeySerde<>(this.keySerde),
                 this.valueSerde)
-            .withLoggingDisabled());
+            .withLoggingEnabled(Map.of()));
   }
 }

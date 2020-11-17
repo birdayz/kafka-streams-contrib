@@ -23,12 +23,12 @@ public class BatchingProcessorTest {
 
   private TestInputTopic<String, String> inputTopic;
   private TopologyTestDriver testDriver;
-  private Transformer<String, String, List<KeyValue<String, String>>> processor;
+  private Transformer<String, String, KeyValue<String, List<String>>> processor;
   MockProcessorContext context;
 
   @Before
   public void setup() {
-    final TransformerSupplier<String, String, List<KeyValue<String, String>>> batch =
+    final TransformerSupplier<String, String, KeyValue<String, List<String>>> batch =
         MoreTransformers.Batch(
             Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("batch")
                 .withKeySerde(Serdes.String())
