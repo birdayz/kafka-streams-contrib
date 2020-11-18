@@ -1,10 +1,10 @@
 package de.nerden.kafka.streams;
 
-public class BatchEntryKey<K> {
+public class BatchKey<K> {
   private K key;
   private long offset;
 
-  public BatchEntryKey(K key, long offset) {
+  public BatchKey(K key, long offset) {
     this.key = key;
     this.offset = offset;
   }

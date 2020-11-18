@@ -1,6 +1,6 @@
 package de.nerden.kafka.streams.processor;
 
-import de.nerden.kafka.streams.BatchEntryKey;
+import de.nerden.kafka.streams.BatchKey;
 import de.nerden.kafka.streams.serde.BatchKeySerde;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,7 @@ public class BatchTransformerSupplier<K, V>
 
   @Override
   public Set<StoreBuilder<?>> stores() {
-    StoreBuilder<KeyValueStore<BatchEntryKey<K>, V>> builder =
+    StoreBuilder<KeyValueStore<BatchKey<K>, V>> builder =
         Stores.keyValueStoreBuilder(
             Stores.inMemoryKeyValueStore(storeName),
             new BatchKeySerde<>(this.keySerde),
