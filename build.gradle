@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'com.google.protobuf' version '0.8.13'
     id 'com.adarshr.test-logger' version '2.1.1'
+    id "com.jfrog.bintray" version "1.8.5"
 }
 
 apply plugin: 'idea'
@@ -12,26 +13,111 @@ group 'de.nerden'
 
 repositories {
     mavenCentral()
+    jcenter()
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+javadoc.failOnError = false
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+bintray {
+    user = 'bintray_user'
+    key = 'bintray_api_key'
+    pkg {
+        repo = 'generic'
+        name = 'gradle-project'
+        userOrg = 'bintray_user'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/bintray/gradle-bintray-plugin.git'
+    }
+}
+
+bintray {
+    user = 'bintray_user'
+    key = 'bintray_api_key'
+    pkg {
+        repo = 'generic'
+        name = 'gradle-project'
+        userOrg = 'bintray_user'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/bintray/gradle-bintray-plugin.git'
+    }
+}
+
+// Create the pom configuration:
+def pomConfig = {
+    licenses {
+        license {
+            name "MIT License"
+            url "https://opensource.org/licenses/MIT"
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id "birdayz"
+            name "Johannes Bruederl"
+            email "johannes.bruederl@gmail.com"
+        }
+    }
+
+    scm {
+        url "https://github.com/birdayz/kafka-streams-contrib"
+    }
 }
 
 publishing {
     publications {
-        kafkaStreamsContrib(MavenPublication) {
+        MyPublication(MavenPublication) {
             from components.java
-        }
-    }
-
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/birdayz/kafka-streams-contrib"
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+            artifact sourcesJar
+            artifact javadocJar
+            groupId 'de.nerden'
+            artifactId 'kafka-streams-contrib'
+            version '0.2'
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Kafka Streams Contrib')
+                root.appendNode('name', 'kafka-streams-contrib')
+                root.appendNode('url', 'https://github.com/birdayz/kafka-streams-contrib')
+                root.children().last() + pomConfig
             }
         }
     }
 }
+
+bintray {
+    user = System.getProperty('bintray.user')
+    key = System.getProperty('bintray.key')
+    publications = ['MyPublication']
+
+    pkg {
+        repo = 'oss-releases'
+        name = 'kafka-streams-contrib'
+        userOrg = 'birdayz'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/birdayz/kafka-streams-contrib.git'
+        version {
+            name = '0.2'
+            desc = '0.2'
+            released = new Date()
+        }
+    }
+
+}
+
 
 def kafkaStreamsVersion = "2.6.0"
 
@@ -73,3 +159,4 @@ sourceSets {
         }
     }
 }
+
