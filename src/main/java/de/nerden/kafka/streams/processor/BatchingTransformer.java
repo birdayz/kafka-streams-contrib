@@ -53,6 +53,7 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
   }
 
   private void forwardBatch() {
+    List<BatchKey<K>> itemsToDelete = new ArrayList<>();
     this.entries.forEach(
         (key, offset) -> {
           List<V> batch = new ArrayList<>();
@@ -62,15 +63,17 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
             range.forEachRemaining(
                 item -> {
                   batch.add(item.value);
-
-                  // No idea if this allowed while we're in the iterator
-                  this.store.delete(item.key);
+                  itemsToDelete.add(item.key);
                 });
           }
           this.context.forward(key, batch);
         });
 
     this.entries.clear();
+    itemsToDelete.forEach(
+        k -> {
+          this.store.delete(k);
+        });
   }
 
   @Override
