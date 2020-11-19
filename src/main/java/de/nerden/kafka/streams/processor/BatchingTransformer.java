@@ -55,13 +55,13 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
   private void forwardBatch() {
     this.entries.forEach(
         (key, offset) -> {
-          List<KeyValue<K, V>> batch = new ArrayList<>();
+          List<V> batch = new ArrayList<>();
           try (KeyValueIterator<BatchKey<K>, V> range =
               this.store.range(new BatchKey<>(key, 0L), new BatchKey<>(key, Long.MAX_VALUE))) {
 
             range.forEachRemaining(
                 item -> {
-                  batch.add(KeyValue.pair(item.key.getKey(), item.value));
+                  batch.add(item.value);
 
                   // No idea if this allowed while we're in the iterator
                   this.store.delete(item.key);
