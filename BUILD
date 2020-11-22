@@ -6,10 +6,16 @@ java_library(
         ["src/main/java/**/*.java"],
     ),
     resources = glob(["src/main/resources/**"]),
+    visibility = [
+        "//:__pkg__",
+    ],
     deps = [
       "@maven//:com_google_protobuf_protobuf_java",
       "@maven//:org_apache_kafka_kafka_streams",
-      "@maven//:org_slf4j_slf4j_api"
+      "@maven//:org_apache_kafka_kafka_clients",
+      "@maven//:org_slf4j_slf4j_api",
+      "@maven//:com_google_guava_guava",
+      "//src/main/proto",
     ],
 )
 

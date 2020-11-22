@@ -21,3 +21,4 @@ gradle-app.setting
 /bazel-kafka-streams-contrib
 /bazel-out
 /bazel-testlogs
+.ijwb
