@@ -1,8 +1,8 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 protobuf_version = "3.11.3"
 
-RULES_JVM_EXTERNAL_TAG = "2.8"
-RULES_JVM_EXTERNAL_SHA = "79c9850690d7614ecdb72d68394f994fef7534b292c4867ce5e7dec0aa7bdfad"
+RULES_JVM_EXTERNAL_TAG = "3.3"
+RULES_JVM_EXTERNAL_SHA = "d85951a92c0908c80bd8551002d66cb23c3434409c814179c0ff026b53544dab"
 
 http_archive(
     name = "rules_jvm_external",

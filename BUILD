@@ -1,4 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_jvm_external//:defs.bzl", "java_export")
 
 java_library(
     name = "kafka-streams-contrib",
@@ -17,5 +18,13 @@ java_library(
       "@maven//:com_google_guava_guava",
       "//src/main/proto",
     ],
+)
+
+java_export(
+  name = "kafka-streams-contrib-publish",
+  maven_coordinates = "de.nerden:kafka-streams-contrib:0.1.1",
+  runtime_deps = [
+    "//:kafka-streams-contrib",
+  ],
 )
 
