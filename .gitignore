@@ -17,3 +17,8 @@ gradle-app.setting
 /.idea
 /.project
 /.settings
+.ijwb
+/bazel-bin
+/bazel-kafka-streams-contrib
+/bazel-out
+/bazel-testlogs
