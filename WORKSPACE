@@ -1,12 +1,12 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-protobuf_version = "3.11.3"
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-RULES_JVM_EXTERNAL_TAG = "3.3"
-RULES_JVM_EXTERNAL_SHA = "d85951a92c0908c80bd8551002d66cb23c3434409c814179c0ff026b53544dab"
 
-local_repository(
+# Maven rules
+git_repository(
     name = "rules_jvm_external",
-    path = "/home/j0e/projects/rules_jvm_external2/",
+    remote = "https://github.com/bazelbuild/rules_jvm_external.git",
+    commit = "0dca0d770e2df942a6eab24386d84991c987c328",
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
@@ -28,7 +28,8 @@ maven_install(
     ],
 )
 
-
+# Proto rules
+protobuf_version = "3.11.3"
 http_archive(
     name = "com_google_protobuf",
     sha256 = "cf754718b0aa945b00550ed7962ddc167167bd922b842199eeb6505e6f344852",
@@ -40,6 +41,7 @@ http_archive(
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
 
 protobuf_deps()
 
