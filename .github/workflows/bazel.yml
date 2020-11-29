@@ -22,6 +22,6 @@ jobs:
       with:
         path: |
           /tmp
-        key: ${{ runner.os }}-${{ hashFiles('/tmp') }}
+        key: ${{ runner.os }}-bazel-disk-cache
     - name: Build
       run: java -version && ./bazelisk test //...
