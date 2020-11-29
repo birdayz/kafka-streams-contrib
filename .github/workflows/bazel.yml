@@ -24,4 +24,4 @@ jobs:
           /tmp
         key: ${{ runner.os }}-bazel-disk-cache
     - name: Build
-      run: java -version && ./bazelisk test //...
+      run: mkdir -p /tmp/bazel && ./bazelisk test //... --disk_cache=/tmp/bazel
