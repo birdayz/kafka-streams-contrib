@@ -21,7 +21,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          /tmp
-        key: ${{ runner.os }}-bazel-disk-cache
+          /tmp/bazel
+        key: ${{ runner.os }}-bazel-cache
     - name: Build
       run: mkdir -p /tmp/bazel && ./bazelisk test //... --disk_cache=/tmp/bazel
