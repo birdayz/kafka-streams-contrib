@@ -1,14 +1,16 @@
 load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_jvm_external//:defs.bzl", "java_export")
 
+package(default_visibility = ["//visibility:public"])
+
 java_library(
-    name = "kafka-streams-contrib",
+    name = "library",
     srcs = glob(
-        ["src/main/java/**/*.java"],
+        ["src/main/java/**/*.java", "examples/*.java"],
     ),
     resources = glob(["src/main/resources/**"]),
     visibility = [
-        "//:__pkg__",
+        "//visibility:public",
     ],
     deps = [
       "@maven//:com_google_protobuf_protobuf_java",
@@ -16,15 +18,33 @@ java_library(
       "@maven//:org_apache_kafka_kafka_clients",
       "@maven//:org_slf4j_slf4j_api",
       "@maven//:com_google_guava_guava",
-      "//src/main/proto",
+      "//proto",
     ],
 )
 
 java_export(
-  name = "kafka-streams-contrib-publish",
-  maven_coordinates = "de.nerden:kafka-streams-contrib:0.1.1",
+  name = "library-export",
+  maven_coordinates = "de.nerden:kafka-streams-contrib:0.1.3",
   runtime_deps = [
-    "//:kafka-streams-contrib",
+    "//:library",
   ],
+)
+
+java_binary(
+    name = "async-processor-example",
+    main_class = "de.nerden.kafka.streams.processor.examples.AsyncProcessorExample",
+    runtime_deps = [
+      ":library",
+      "@maven//:org_slf4j_slf4j_simple",
+    ]
+)
+
+java_binary(
+    name = "batch-processor-example",
+    main_class = "de.nerden.kafka.streams.processor.examples.BatchingProcessorExample",
+    runtime_deps = [
+      ":library",
+      "@maven//:org_slf4j_slf4j_simple",
+    ]
 )
 
