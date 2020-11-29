@@ -15,10 +15,12 @@ maven_install(
     artifacts = [
       "com.google.protobuf:protobuf-java:3.13.0",
       "org.apache.kafka:kafka-streams:2.6.0",
+      "org.apache.kafka:kafka-streams-test-utils:2.6.0",
       "org.apache.kafka:kafka-clients:2.6.0",
       "org.slf4j:slf4j-api:1.7.30",
       "org.slf4j:slf4j-simple:1.7.30",
-      "com.google.guava:guava:29.0-jre"
+      "com.google.guava:guava:29.0-jre",
+      "com.google.truth:truth:1.1"
     ],
     repositories = [
         "https://jcenter.bintray.com/",
@@ -56,3 +58,4 @@ load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_
 rules_proto_dependencies()
 
 rules_proto_toolchains()
+

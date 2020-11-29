@@ -22,6 +22,25 @@ java_library(
     ],
 )
 
+java_test(
+    name = "AllTests",
+    test_class = "de.nerden.kafka.streams.processor.AsyncProcessorTest",
+    srcs = glob(["src/test/java/**/*.java"]),
+    deps = [
+      "@maven//:com_google_protobuf_protobuf_java",
+      "@maven//:org_apache_kafka_kafka_streams",
+      "@maven//:org_apache_kafka_kafka_clients",
+      "@maven//:org_apache_kafka_kafka_streams_test_utils",
+      "@maven//:org_slf4j_slf4j_api",
+      "@maven//:com_google_guava_guava",
+      "@maven//:com_google_truth_truth",
+      "//proto",
+      ":library",
+    ],
+
+)
+
+
 java_export(
   name = "library-export",
   maven_coordinates = "de.nerden:kafka-streams-contrib:0.1.3",
