@@ -13,4 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: ./bazelisk test //...
+      run: ./bazelisk test //... --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
