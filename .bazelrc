@@ -1,2 +1,2 @@
 build --disk_cache=/tmp --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-test --disk_cache=/tmp --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+test --disk_cache=/tmp --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11 --test_output=all
