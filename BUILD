@@ -30,6 +30,12 @@ java_test(
       "@maven//:org_apache_kafka_kafka_streams_test_utils",
       "@maven//:com_google_truth_truth",
       ":library",
+      "@maven//:com_google_protobuf_protobuf_java",
+      "@maven//:org_apache_kafka_kafka_streams",
+      "@maven//:org_apache_kafka_kafka_clients",
+      "@maven//:org_slf4j_slf4j_api",
+      "@maven//:com_google_guava_guava",
+      "//proto",
     ],
 
 )
