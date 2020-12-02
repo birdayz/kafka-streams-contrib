@@ -70,8 +70,7 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
         });
 
     this.entries.clear();
-    itemsToDelete.forEach(
-        k -> this.store.delete(k));
+    itemsToDelete.forEach(k -> this.store.delete(k));
   }
 
   @Override

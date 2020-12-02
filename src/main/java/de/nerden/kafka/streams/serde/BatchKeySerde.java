@@ -3,11 +3,10 @@ package de.nerden.kafka.streams.serde;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.nerden.kafka.streams.BatchKey;
+import java.util.Base64;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
-
-import java.util.Base64;
 
 public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
 
@@ -36,9 +35,8 @@ public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
 
         byte[] decoded = Base64.getDecoder().decode(proto.getOriginalKey().toByteArray());
 
-        BatchKey<K> kBatchKey = new BatchKey<>(
-                keyDeserializer.deserialize(topic, decoded),
-                proto.getOffset());
+        BatchKey<K> kBatchKey =
+            new BatchKey<>(keyDeserializer.deserialize(topic, decoded), proto.getOffset());
         return kBatchKey;
       } catch (InvalidProtocolBufferException e) {
         return null;
