@@ -7,6 +7,8 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
 
+import java.util.Base64;
+
 public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
 
   private BatchEntryKeySerializer serializer;
@@ -32,9 +34,12 @@ public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
         final de.nerden.kafka.streams.proto.BatchKey proto =
             de.nerden.kafka.streams.proto.BatchKey.parseFrom(data);
 
-        return new BatchKey<>(
-            keyDeserializer.deserialize(topic, proto.getOriginalKey().toByteArray()),
-            proto.getOffset());
+        byte[] decoded = Base64.getDecoder().decode(proto.getOriginalKey().toByteArray());
+
+        BatchKey<K> kBatchKey = new BatchKey<>(
+                keyDeserializer.deserialize(topic, decoded),
+                proto.getOffset());
+        return kBatchKey;
       } catch (InvalidProtocolBufferException e) {
         return null;
       }
@@ -51,10 +56,12 @@ public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
 
     @Override
     public byte[] serialize(String topic, BatchKey<K> data) {
-      byte[] originKey = this.keySerializer.serialize(topic, data.getKey());
+      byte[] originalKey = this.keySerializer.serialize(topic, data.getKey());
+      byte[] base64Key = Base64.getEncoder().encode(originalKey);
+
       de.nerden.kafka.streams.proto.BatchKey proto =
           de.nerden.kafka.streams.proto.BatchKey.newBuilder()
-              .setOriginalKey(ByteString.copyFrom(originKey))
+              .setOriginalKey(ByteString.copyFrom(base64Key))
               .setOffset(data.getOffset())
               .build();
       return proto.toByteArray();

@@ -55,6 +55,10 @@ public class BatchingProcessorTest {
 
     Iterator<CapturedForward> i = context.forwarded().iterator();
     Assert.assertTrue(i.hasNext());
-    Assert.assertEquals(List.of("def", "def2"), i.next().keyValue().value);
+
+    KeyValue<String, List<String>> firstBatch = i.next().keyValue();
+
+    Assert.assertEquals(List.of("def", "def2"), firstBatch.value);
+    Assert.assertEquals("abc", firstBatch.key);
   }
 }
