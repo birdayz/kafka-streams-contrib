@@ -2,6 +2,7 @@ package de.nerden.kafka.streams.serde;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
@@ -33,6 +34,9 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
 
     @Override
     public KeyValue<K, V> deserialize(String topic, byte[] data) {
+      if (data == null) {
+        return null;
+      }
       try {
         final de.nerden.kafka.streams.proto.KeyValue keyValue =
             de.nerden.kafka.streams.proto.KeyValue.parseFrom(data);
@@ -40,7 +44,7 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
             this.keyDeserializer.deserialize(topic, keyValue.getKey().toByteArray()),
             this.valueDeserializer.deserialize(topic, keyValue.getValue().toByteArray()));
       } catch (InvalidProtocolBufferException e) {
-        return null;
+        throw new SerializationException("Failed to deserialize proto", e);
       }
     }
   }
@@ -57,6 +61,9 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
 
     @Override
     public byte[] serialize(String topic, KeyValue<K, V> data) {
+      if (data == null) {
+        return null;
+      }
       byte[] key = this.keySerializer.serialize(topic, data.key);
       byte[] value = this.valueSerializer.serialize(topic, data.value);
 

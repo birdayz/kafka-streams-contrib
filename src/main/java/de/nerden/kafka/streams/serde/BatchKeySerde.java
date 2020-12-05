@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.nerden.kafka.streams.BatchKey;
 import java.util.Base64;
+import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
@@ -29,6 +30,9 @@ public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
 
     @Override
     public BatchKey<K> deserialize(String topic, byte[] data) {
+      if (data == null) {
+        return null;
+      }
       try {
         final de.nerden.kafka.streams.proto.BatchKey proto =
             de.nerden.kafka.streams.proto.BatchKey.parseFrom(data);
@@ -39,7 +43,7 @@ public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
             new BatchKey<>(keyDeserializer.deserialize(topic, decoded), proto.getOffset());
         return kBatchKey;
       } catch (InvalidProtocolBufferException e) {
-        return null;
+        throw new SerializationException("Failed to deserialize proto", e);
       }
     }
   }
@@ -54,6 +58,9 @@ public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
 
     @Override
     public byte[] serialize(String topic, BatchKey<K> data) {
+      if (data == null) {
+        return null;
+      }
       byte[] originalKey = this.keySerializer.serialize(topic, data.getKey());
       byte[] base64Key = Base64.getEncoder().encode(originalKey);
 
