@@ -11,7 +11,7 @@ Available via JCenter.
 
 ### Gradle
 ```
-implementation 'de.nerden:kafka-streams-contrib:0.1.3'
+implementation 'de.nerden:kafka-streams-contrib:0.3.1'
 ```
 
 ### Maven
