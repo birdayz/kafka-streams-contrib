@@ -27,4 +27,4 @@ jobs:
     - name: Build
       env:
         JCENTER_TOKEN: ${{ secrets.JCENTER_TOKEN }}
-      run: mkdir -p /tmp/bazel && bazel run --stamp --define "maven_repo=https://api.bintray.com/maven/birdayz/oss-releases/kafka-streams-contrib/%3Bpublish=1" --define "maven_user=birdayz" --define "maven_password=$JCENTER_TOKEN" //:library-export.publish
+      run: mkdir -p /tmp/bazel && sed -i "s/VERSION/${GITHUB_REF##*/}/g" ./BUILD && bazel run --stamp --define "maven_repo=https://api.bintray.com/maven/birdayz/oss-releases/kafka-streams-contrib/%3Bpublish=1" --define "maven_user=birdayz" --define "maven_password=${JCENTER_TOKEN}" //:library-export.publish
