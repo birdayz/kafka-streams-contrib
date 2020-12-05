@@ -1,10 +1,11 @@
-name: Bazel build
+name: Maven Publish
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - "!*"
+    tags:
+      - "v*"
 
 jobs:
   build:
@@ -16,9 +17,6 @@ jobs:
         java-version: '11' # The JDK version to make available on the path.
         java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
         architecture: x64 # (x64 or x86) - defaults to x64
-    - uses: axel-op/googlejavaformat-action@v3
-      with:
-        args: "--replace"
     - name: Cache multiple paths
       uses: actions/cache@v2
       with:
@@ -26,4 +24,4 @@ jobs:
           /tmp/bazel
         key: ${{ runner.os }}-bazel-cache
     - name: Build
-      run: mkdir -p /tmp/bazel && ./bazelisk test //... --disk_cache=/tmp/bazel
+      run: mkdir -p /tmp/bazel && bazel run --stamp --define "maven_repo=https://api.bintray.com/maven/birdayz/oss-releases/kafka-streams-contrib/%3Bpublish=1" --define "maven_user=birdayz" --define "maven_password=${JCENTER_TOKEN}" //:library-export.publish
