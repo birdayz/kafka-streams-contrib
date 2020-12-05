@@ -43,7 +43,7 @@ java_test(
 
 java_export(
   name = "library-export",
-  maven_coordinates = "de.nerden:kafka-streams-contrib:0.1.3",
+  maven_coordinates = "de.nerden:kafka-streams-contrib:0.3",
   runtime_deps = [
     "//:library",
   ],
