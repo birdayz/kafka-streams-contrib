@@ -1,6 +1,7 @@
 package de.nerden.kafka.streams.processor.examples;
 
 import de.nerden.kafka.streams.MoreTransformers;
+import java.util.Properties;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -10,8 +11,6 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.state.Stores;
-
-import java.util.Properties;
 
 public class BatchingProcessorExample {
 
