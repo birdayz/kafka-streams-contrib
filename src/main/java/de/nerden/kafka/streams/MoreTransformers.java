@@ -13,19 +13,27 @@ public class MoreTransformers {
 
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(
       Materialized<K, V, KeyValueStore<Bytes, byte[]>> materialized) {
-    final MaterializedInternal<K, V, KeyValueStore<Bytes, byte[]>> materializedI =
+    final MaterializedInternal<K, V, KeyValueStore<Bytes, byte[]>> materializedInternal =
         new MaterializedInternal<>(materialized);
-    String storeName;
-    if (materializedI.storeName() != null) {
-      storeName = materializedI.storeName();
-    } else {
-      storeName = "batch";
-    }
 
-    return new BatchTransformerSupplier<>(
-        storeName,
-        materializedI.keySerde(),
-        materializedI.valueSerde(),
-        materializedI.loggingEnabled());
+    if (materializedInternal.storeName() != null) {
+      return new BatchTransformerSupplier<>(
+          materializedInternal.storeName(),
+          materializedInternal.keySerde(),
+          materializedInternal.valueSerde(),
+          materializedInternal.loggingEnabled());
+    } else if (materializedInternal.storeSupplier() != null) {
+      return new BatchTransformerSupplier<>(
+          materializedInternal.storeName(),
+          materializedInternal.keySerde(),
+          materializedInternal.valueSerde(),
+          materializedInternal.loggingEnabled());
+    } else {
+      return new BatchTransformerSupplier<>(
+          "batch",
+          materializedInternal.keySerde(),
+          materializedInternal.valueSerde(),
+          materializedInternal.loggingEnabled());
+    }
   }
 }
