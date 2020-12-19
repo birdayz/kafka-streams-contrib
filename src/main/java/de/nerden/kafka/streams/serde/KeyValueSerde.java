@@ -41,8 +41,10 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
         final de.nerden.kafka.streams.proto.KeyValue keyValue =
             de.nerden.kafka.streams.proto.KeyValue.parseFrom(data);
         return KeyValue.pair(
-            this.keyDeserializer.deserialize(topic, keyValue.getKey().toByteArray()),
-            this.valueDeserializer.deserialize(topic, keyValue.getValue().toByteArray()));
+            this.keyDeserializer.deserialize(
+                topic, keyValue.getKey() == null ? null : keyValue.getKey().toByteArray()),
+            this.valueDeserializer.deserialize(
+                topic, keyValue.getValue() == null ? null : keyValue.getValue().toByteArray()));
       } catch (InvalidProtocolBufferException e) {
         throw new SerializationException("Failed to deserialize proto", e);
       }
@@ -68,8 +70,8 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
       byte[] value = this.valueSerializer.serialize(topic, data.value);
 
       return de.nerden.kafka.streams.proto.KeyValue.newBuilder()
-          .setKey(ByteString.copyFrom(key))
-          .setValue(ByteString.copyFrom(value))
+          .setKey(key == null ? null : ByteString.copyFrom(key))
+          .setValue(value == null ? null : ByteString.copyFrom(value))
           .build()
           .toByteArray();
     }

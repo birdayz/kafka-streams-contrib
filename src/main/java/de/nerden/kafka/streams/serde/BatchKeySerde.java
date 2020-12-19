@@ -62,11 +62,13 @@ public class BatchKeySerde<K> implements Serde<BatchKey<K>> {
         return null;
       }
       byte[] originalKey = this.keySerializer.serialize(topic, data.getKey());
-      byte[] base64Key = Base64.getEncoder().encode(originalKey);
 
       de.nerden.kafka.streams.proto.BatchKey proto =
           de.nerden.kafka.streams.proto.BatchKey.newBuilder()
-              .setOriginalKey(ByteString.copyFrom(base64Key))
+              .setOriginalKey(
+                  originalKey == null
+                      ? null
+                      : ByteString.copyFrom(Base64.getEncoder().encode(originalKey)))
               .setOffset(data.getOffset())
               .build();
       return proto.toByteArray();
