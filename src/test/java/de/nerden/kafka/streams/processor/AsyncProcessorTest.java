@@ -1,19 +1,17 @@
 package de.nerden.kafka.streams.processor;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.common.util.concurrent.MoreExecutors;
 import de.nerden.kafka.streams.serde.KeyValueSerde;
+import java.util.Properties;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Properties;
-
-import static com.google.common.truth.Truth.assertThat;
 
 public class AsyncProcessorTest {
 
