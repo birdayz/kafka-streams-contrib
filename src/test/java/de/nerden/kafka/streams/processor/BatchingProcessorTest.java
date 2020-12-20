@@ -1,8 +1,6 @@
 package de.nerden.kafka.streams.processor;
 
 import de.nerden.kafka.streams.MoreTransformers;
-import java.util.Iterator;
-import java.util.List;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
@@ -13,16 +11,19 @@ import org.apache.kafka.streams.processor.MockProcessorContext;
 import org.apache.kafka.streams.processor.MockProcessorContext.CapturedForward;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.state.KeyValueStore;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class BatchingProcessorTest {
 
   private Transformer<String, String, KeyValue<String, List<String>>> processor;
   MockProcessorContext context;
 
-  @Before
+  @BeforeEach
   public void setup() {
     final TransformerSupplier<String, String, KeyValue<String, List<String>>> batch =
         MoreTransformers.Batch(
@@ -54,11 +55,11 @@ public class BatchingProcessorTest {
     context.scheduledPunctuators().get(0).getPunctuator().punctuate(0L);
 
     Iterator<CapturedForward> i = context.forwarded().iterator();
-    Assert.assertTrue(i.hasNext());
+    Assertions.assertTrue(i.hasNext());
 
     KeyValue<String, List<String>> firstBatch = i.next().keyValue();
 
-    Assert.assertEquals(List.of("def", "def2"), firstBatch.value);
-    Assert.assertEquals("abc", firstBatch.key);
+    Assertions.assertEquals(List.of("def", "def2"), firstBatch.value);
+    Assertions.assertEquals("abc", firstBatch.key);
   }
 }

@@ -20,7 +20,17 @@ maven_install(
       "org.slf4j:slf4j-api:1.7.30",
       "org.slf4j:slf4j-simple:1.7.30",
       "com.google.guava:guava:29.0-jre",
-      "com.google.truth:truth:1.1"
+      "com.google.truth:truth:1.1",
+      "org.junit.jupiter:junit-jupiter-api:5.5.0",
+      "org.junit.jupiter:junit-jupiter-engine:5.5.0",
+      "org.junit.jupiter:junit-jupiter-params:5.5.0",
+      "org.apiguardian:apiguardian-api:1.0.0",
+      "org.opentest4j:opentest4j:1.1.1",
+      "org.junit.platform:junit-platform-commons:1.5.0",
+      "org.junit.platform:junit-platform-console:1.5.0",
+      "org.junit.platform:junit-platform-engine:1.5.0",
+      "org.junit.platform:junit-platform-launcher:1.5.0",
+      "org.junit.platform:junit-platform-suite-api:1.5.0",
     ],
     repositories = [
         "https://jcenter.bintray.com/",
@@ -61,3 +71,15 @@ rules_proto_dependencies()
 
 rules_proto_toolchains()
 
+load(":junit5.bzl", "junit_jupiter_java_repositories", "junit_platform_java_repositories")
+JUNIT_JUPITER_VERSION = "5.6.2"
+
+JUNIT_PLATFORM_VERSION = "1.6.2"
+
+junit_jupiter_java_repositories(
+    version = JUNIT_JUPITER_VERSION,
+)
+
+junit_platform_java_repositories(
+    version = JUNIT_PLATFORM_VERSION,
+)
