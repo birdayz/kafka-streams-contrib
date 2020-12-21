@@ -22,11 +22,13 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
   private Map<K, Long> entries;
 
   private String storeName;
+  private final long batchMaxDurationMillis;
 
   Cancellable punctuation;
 
-  public BatchingTransformer(String storeName) {
+  public BatchingTransformer(String storeName, long batchMaxDurationMillis) {
     this.storeName = storeName;
+    this.batchMaxDurationMillis = batchMaxDurationMillis;
   }
 
   @Override
@@ -42,7 +44,9 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
     this.context = context;
     this.punctuation =
         this.context.schedule(
-            Duration.ofMillis(10000), PunctuationType.WALL_CLOCK_TIME, timestamp -> forwardBatch());
+            Duration.ofMillis(batchMaxDurationMillis),
+            PunctuationType.WALL_CLOCK_TIME,
+            timestamp -> forwardBatch());
   }
 
   @Override

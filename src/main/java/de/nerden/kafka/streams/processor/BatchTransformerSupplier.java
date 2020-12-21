@@ -20,30 +20,38 @@ public class BatchTransformerSupplier<K, V>
   private Serde<K> keySerde;
   private Serde<V> valueSerde;
   private final boolean changeLoggingEnabled;
+  private final long maxBatchDurationMillis;
 
   public BatchTransformerSupplier(
       KeyValueBytesStoreSupplier storeSupplier,
       Serde<K> keySerde,
       Serde<V> valueSerde,
-      boolean changeLoggingEnabled) {
+      boolean changeLoggingEnabled,
+      long maxBatchDurationMillis) {
     this.storeSupplier = storeSupplier;
     this.keySerde = keySerde;
     this.valueSerde = valueSerde;
     this.changeLoggingEnabled = changeLoggingEnabled;
+    this.maxBatchDurationMillis = maxBatchDurationMillis;
   }
 
   public BatchTransformerSupplier(
-      String storeName, Serde<K> keySerde, Serde<V> valueSerde, boolean changeLoggingEnabled) {
+      String storeName,
+      Serde<K> keySerde,
+      Serde<V> valueSerde,
+      boolean changeLoggingEnabled,
+      long maxBatchDurationMillis) {
     this.storeName = storeName;
     this.keySerde = keySerde;
     this.valueSerde = valueSerde;
     this.changeLoggingEnabled = changeLoggingEnabled;
     this.storeSupplier = null;
+    this.maxBatchDurationMillis = maxBatchDurationMillis;
   }
 
   @Override
   public Transformer<K, V, KeyValue<K, List<V>>> get() {
-    return new BatchingTransformer<>(this.storeName);
+    return new BatchingTransformer<>(this.storeName, this.maxBatchDurationMillis);
   }
 
   @Override
