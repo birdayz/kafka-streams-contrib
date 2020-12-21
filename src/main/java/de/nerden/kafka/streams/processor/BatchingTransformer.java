@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.Cancellable;
@@ -23,12 +25,15 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
 
   private String storeName;
   private final long batchMaxDurationMillis;
+  private final long maxBatchSizePerKey;
 
   Cancellable punctuation;
 
-  public BatchingTransformer(String storeName, long batchMaxDurationMillis) {
+  public BatchingTransformer(
+      String storeName, long batchMaxDurationMillis, long maxBatchSizePerKey) {
     this.storeName = storeName;
     this.batchMaxDurationMillis = batchMaxDurationMillis;
+    this.maxBatchSizePerKey = maxBatchSizePerKey;
   }
 
   @Override
@@ -46,35 +51,47 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
         this.context.schedule(
             Duration.ofMillis(batchMaxDurationMillis),
             PunctuationType.WALL_CLOCK_TIME,
-            timestamp -> forwardBatch());
+            timestamp -> forwardAll());
   }
 
   @Override
   public KeyValue<K, List<V>> transform(K key, V value) {
+    // TODO check if batch would exceed message limit per key
     this.store.put(new BatchKey<>(key, this.context.offset()), value);
     this.entries.merge(key, 1L, Long::sum);
+
+    if (this.entries.get(key) >= this.maxBatchSizePerKey) {
+      // Forward already
+      List<KeyValue<BatchKey<K>, V>> batch = getMessages(key);
+      context.forward(key, batch.stream().map(kv -> kv.value).collect(Collectors.toList()));
+      batch.forEach(kv -> this.store.delete(kv.key));
+      this.entries.remove(key);
+    }
+
     return null;
   }
 
-  private void forwardBatch() {
+  private void forwardAll() {
     List<BatchKey<K>> itemsToDelete = new ArrayList<>();
     this.entries.forEach(
         (key, offset) -> {
-          List<V> batch = new ArrayList<>();
-          try (KeyValueIterator<BatchKey<K>, V> range =
-              this.store.range(new BatchKey<>(key, 0L), new BatchKey<>(key, Long.MAX_VALUE))) {
-
-            range.forEachRemaining(
-                item -> {
-                  batch.add(item.value);
-                  itemsToDelete.add(item.key);
-                });
-          }
-          this.context.forward(key, batch);
+          List<KeyValue<BatchKey<K>, V>> batch = getMessages(key);
+          this.context.forward(
+              key, batch.stream().map(kv -> kv.value).collect(Collectors.toList()));
+          batch.stream().map(kv -> kv.key).forEach(itemsToDelete::add);
         });
 
     this.entries.clear();
     itemsToDelete.forEach(k -> this.store.delete(k));
+  }
+
+  private List<KeyValue<BatchKey<K>, V>> getMessages(K key) {
+    List<KeyValue<BatchKey<K>, V>> batch = new ArrayList<>();
+    try (KeyValueIterator<BatchKey<K>, V> range =
+        this.store.range(new BatchKey<>(key, 0L), new BatchKey<>(key, Long.MAX_VALUE))) {
+      range.forEachRemaining(batch::add);
+    }
+    return batch;
   }
 
   @Override

@@ -21,18 +21,21 @@ public class BatchTransformerSupplier<K, V>
   private Serde<V> valueSerde;
   private final boolean changeLoggingEnabled;
   private final long maxBatchDurationMillis;
+  private final long maxBatchSizePerKey;
 
   public BatchTransformerSupplier(
       KeyValueBytesStoreSupplier storeSupplier,
       Serde<K> keySerde,
       Serde<V> valueSerde,
       boolean changeLoggingEnabled,
-      long maxBatchDurationMillis) {
+      long maxBatchDurationMillis,
+      long maxBatchSizePerKey) {
     this.storeSupplier = storeSupplier;
     this.keySerde = keySerde;
     this.valueSerde = valueSerde;
     this.changeLoggingEnabled = changeLoggingEnabled;
     this.maxBatchDurationMillis = maxBatchDurationMillis;
+    this.maxBatchSizePerKey = maxBatchSizePerKey;
   }
 
   public BatchTransformerSupplier(
@@ -40,18 +43,21 @@ public class BatchTransformerSupplier<K, V>
       Serde<K> keySerde,
       Serde<V> valueSerde,
       boolean changeLoggingEnabled,
-      long maxBatchDurationMillis) {
+      long maxBatchDurationMillis,
+      long maxBatchSizePerKey) {
     this.storeName = storeName;
     this.keySerde = keySerde;
     this.valueSerde = valueSerde;
     this.changeLoggingEnabled = changeLoggingEnabled;
     this.storeSupplier = null;
     this.maxBatchDurationMillis = maxBatchDurationMillis;
+    this.maxBatchSizePerKey = maxBatchSizePerKey;
   }
 
   @Override
   public Transformer<K, V, KeyValue<K, List<V>>> get() {
-    return new BatchingTransformer<>(this.storeName, this.maxBatchDurationMillis);
+    return new BatchingTransformer<>(
+        this.storeName, this.maxBatchDurationMillis, this.maxBatchSizePerKey);
   }
 
   @Override

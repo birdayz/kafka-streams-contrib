@@ -13,11 +13,19 @@ public class MoreTransformers {
 
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(
       Materialized<K, V, KeyValueStore<Bytes, byte[]>> materialized) {
-    return Batch(materialized, 10000L);
+    return Batch(materialized, 10000L, 1000L);
   }
 
+  /**
+   * @param materialized Materialization information
+   * @param maxBatchDurationMillis This is the upper bounds in terms of time, how long a batch will
+   *     be waited for.
+   * @return
+   */
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(
-      Materialized<K, V, KeyValueStore<Bytes, byte[]>> materialized, long maxBatchDurationMillis) {
+      Materialized<K, V, KeyValueStore<Bytes, byte[]>> materialized,
+      long maxBatchDurationMillis,
+      long maxBatchSizePerKey) {
     final MaterializedInternal<K, V, KeyValueStore<Bytes, byte[]>> materializedInternal =
         new MaterializedInternal<>(materialized);
 
@@ -27,21 +35,24 @@ public class MoreTransformers {
           materializedInternal.keySerde(),
           materializedInternal.valueSerde(),
           materializedInternal.loggingEnabled(),
-          maxBatchDurationMillis);
+          maxBatchDurationMillis,
+          maxBatchSizePerKey);
     } else if (materializedInternal.storeSupplier() != null) {
       return new BatchTransformerSupplier<>(
           materializedInternal.storeName(),
           materializedInternal.keySerde(),
           materializedInternal.valueSerde(),
           materializedInternal.loggingEnabled(),
-          maxBatchDurationMillis);
+          maxBatchDurationMillis,
+          maxBatchSizePerKey);
     } else {
       return new BatchTransformerSupplier<>(
           "batch",
           materializedInternal.keySerde(),
           materializedInternal.valueSerde(),
           materializedInternal.loggingEnabled(),
-          maxBatchDurationMillis);
+          maxBatchDurationMillis,
+          maxBatchSizePerKey);
     }
   }
 }
