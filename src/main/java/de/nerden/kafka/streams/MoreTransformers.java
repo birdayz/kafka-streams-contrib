@@ -1,14 +1,13 @@
 package de.nerden.kafka.streams;
 
 import de.nerden.kafka.streams.processor.BatchTransformerSupplier;
+import java.util.List;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.kafka.streams.kstream.internals.MaterializedInternal;
 import org.apache.kafka.streams.state.KeyValueStore;
-
-import java.util.List;
 
 public class MoreTransformers {
 
