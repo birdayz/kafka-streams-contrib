@@ -40,11 +40,12 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
       try {
         final de.nerden.kafka.streams.proto.KeyValue keyValue =
             de.nerden.kafka.streams.proto.KeyValue.parseFrom(data);
+
         return KeyValue.pair(
             this.keyDeserializer.deserialize(
-                topic, keyValue.getKey() == null ? null : keyValue.getKey().toByteArray()),
+                topic, keyValue.hasKey() ? keyValue.getKey().toByteArray() : null),
             this.valueDeserializer.deserialize(
-                topic, keyValue.getValue() == null ? null : keyValue.getValue().toByteArray()));
+                topic, keyValue.hasValue() ? keyValue.getValue().toByteArray() : null));
       } catch (InvalidProtocolBufferException e) {
         throw new SerializationException("Failed to deserialize proto", e);
       }
@@ -69,11 +70,18 @@ public class KeyValueSerde<K, V> implements Serde<KeyValue<K, V>> {
       byte[] key = this.keySerializer.serialize(topic, data.key);
       byte[] value = this.valueSerializer.serialize(topic, data.value);
 
-      return de.nerden.kafka.streams.proto.KeyValue.newBuilder()
-          .setKey(key == null ? null : ByteString.copyFrom(key))
-          .setValue(value == null ? null : ByteString.copyFrom(value))
-          .build()
-          .toByteArray();
+      de.nerden.kafka.streams.proto.KeyValue.Builder builder =
+          de.nerden.kafka.streams.proto.KeyValue.newBuilder();
+
+      if (key != null) {
+        builder.setKey(ByteString.copyFrom(key));
+      }
+
+      if (value != null) {
+        builder.setValue(ByteString.copyFrom(value));
+      }
+
+      return builder.build().toByteArray();
     }
   }
 
