@@ -13,9 +13,9 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(
     artifacts = [
         "com.google.protobuf:protobuf-java:3.14.0",
-        "org.apache.kafka:kafka-streams:2.6.0",
-        "org.apache.kafka:kafka-streams-test-utils:2.6.0",
-        "org.apache.kafka:kafka-clients:2.6.0",
+        "org.apache.kafka:kafka-streams:2.7.0",
+        "org.apache.kafka:kafka-streams-test-utils:2.7.0",
+        "org.apache.kafka:kafka-clients:2.7.0",
         "org.slf4j:slf4j-api:1.7.30",
         "org.slf4j:slf4j-simple:1.7.30",
         "com.google.guava:guava:29.0-jre",
