@@ -29,7 +29,7 @@ public class AsyncProcessorTest {
     topology.addProcessor(
         "processor",
         () ->
-            new AsyncProcessor<String, String>(
+            new AsyncProcessor<String, String, Void, Void>(
                 kv -> {
                   throw new RuntimeException();
                 },

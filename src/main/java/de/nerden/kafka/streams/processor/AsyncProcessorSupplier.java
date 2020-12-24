@@ -7,13 +7,14 @@ import java.util.function.Consumer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.processor.Processor;
-import org.apache.kafka.streams.processor.ProcessorSupplier;
+import org.apache.kafka.streams.processor.api.Processor;
+import org.apache.kafka.streams.processor.api.ProcessorSupplier;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
-public class AsyncProcessorSupplier<K, V> implements ProcessorSupplier<K, V> {
+public class AsyncProcessorSupplier<K, V, Kout, Vout>
+    implements ProcessorSupplier<K, V, Kout, Vout> {
 
   private final String inflightMessagesStoreName;
   private final String failedMessagesStoreName;
@@ -43,7 +44,7 @@ public class AsyncProcessorSupplier<K, V> implements ProcessorSupplier<K, V> {
   }
 
   @Override
-  public Processor<K, V> get() {
+  public Processor<K, V, Kout, Vout> get() {
     return new AsyncProcessor<>(
         inflightMessagesStoreName,
         failedMessagesStoreName,

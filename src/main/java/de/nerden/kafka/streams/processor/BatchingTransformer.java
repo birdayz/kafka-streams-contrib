@@ -36,9 +36,8 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void init(final ProcessorContext context) {
-    store = (KeyValueStore<BatchKey<K>, V>) context.getStateStore(storeName);
+    store = context.getStateStore(storeName);
     entries = new HashMap<>();
 
     try (KeyValueIterator<BatchKey<K>, V> all = this.store.all()) {

@@ -8,15 +8,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.processor.Processor;
-import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.PunctuationType;
+import org.apache.kafka.streams.processor.api.Processor;
+import org.apache.kafka.streams.processor.api.ProcessorContext;
+import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsyncProcessor<K, V> implements Processor<K, V> {
+public class AsyncProcessor<K, V, Kout, Vout> implements Processor<K, V, Kout, Vout> {
 
   private static final Logger log = LoggerFactory.getLogger(AsyncProcessor.class);
   public static final int MAX_INFLIGHT = 100;
@@ -47,17 +48,14 @@ public class AsyncProcessor<K, V> implements Processor<K, V> {
 
   private KeyValueStore<Long, KeyValue<K, V>> inflightMessages;
   private KeyValueStore<Long, KeyValue<K, V>> failedMessages;
-  private ProcessorContext context;
+  private ProcessorContext<Kout, Vout> context;
 
   @Override
-  @SuppressWarnings("unchecked")
-  public void init(ProcessorContext context) {
+  public void init(ProcessorContext<Kout, Vout> context) {
     this.semaphore = new Semaphore(MAX_INFLIGHT);
 
-    inflightMessages =
-        (KeyValueStore<Long, KeyValue<K, V>>) context.getStateStore(this.inflightMessagesStoreName);
-    failedMessages =
-        (KeyValueStore<Long, KeyValue<K, V>>) context.getStateStore(this.failedMessagesStoreName);
+    inflightMessages = context.getStateStore(this.inflightMessagesStoreName);
+    failedMessages = context.getStateStore(this.failedMessagesStoreName);
 
     this.context = context;
     this.executorService = this.executorBuilder.get();
@@ -97,10 +95,14 @@ public class AsyncProcessor<K, V> implements Processor<K, V> {
   }
 
   @Override
-  public void process(K key, V value) {
+  public void process(Record<K, V> record) {
     this.semaphore.acquireUninterruptibly();
-    this.inflightMessages.put(this.context.offset(), KeyValue.pair(key, value));
-    execAsync(KeyValue.pair(this.context.offset(), KeyValue.pair(key, value)));
+    this.inflightMessages.put(
+        this.context.recordMetadata().get().offset(), KeyValue.pair(record.key(), record.value()));
+    execAsync(
+        KeyValue.pair(
+            this.context.recordMetadata().get().offset(),
+            KeyValue.pair(record.key(), record.value())));
   }
 
   @Override
