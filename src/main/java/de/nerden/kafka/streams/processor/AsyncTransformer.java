@@ -72,12 +72,11 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
     this.inflightMessages = context.getStateStore(this.inflightStoreName);
 
     this.context.schedule(
-        Duration.ofMillis(1000),
-        PunctuationType.WALL_CLOCK_TIME,
-        timestamp -> {
-          System.out.println("punctuate called");
-          handleFinished();
-        });
+        Duration.ofMillis(1000), PunctuationType.WALL_CLOCK_TIME, this::punctuate);
+  }
+
+  private void punctuate(long l) {
+    handleFinished();
   }
 
   ConcurrentLinkedQueue<KeyValue<K, V>> completedQueue = new ConcurrentLinkedQueue<>();
@@ -85,7 +84,9 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
 
   @Override
   public KeyValue<K, V> transform(K key, V value) {
-    handleFinished();
+    handleFinished(); //  Collect records from completed / retry queue. This must be done here or in
+    // punctuate(), because it has to be done in the StreamThreads, and not in
+    // some other async executor thread.
     processAsync(key, value);
 
     return null;
@@ -100,18 +101,21 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
         .whenComplete(
             (result, e) -> {
               if (e == null) {
-                System.out.println("OK"+ result.toString());
                 completedQueue.add(result);
               }
 
               if (e != null) {
-                RetryMessage<K, V> retry = new RetryMessage<>(key, value, context.offset(), 1);
+                RetryMessage<K, V> retry =
+                    new RetryMessage<>(
+                        key,
+                        value,
+                        context.offset(),
+                        1); // TODO get rid of context.offset. might not exist, eg when called from
+                // punctuate
+                // FIXME currently numFails is hardcoded to 1
 
                 if (this.retryDecider.test(retry, e)) {
                   this.retryQueue.add(retry);
-                  System.out.println("Retrying");
-                } else {
-                  System.out.println("Not retrying");
                 }
               }
 
