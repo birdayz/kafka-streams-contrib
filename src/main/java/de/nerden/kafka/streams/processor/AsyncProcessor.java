@@ -2,6 +2,7 @@ package de.nerden.kafka.streams.processor;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -81,6 +82,13 @@ public class AsyncProcessor<K, V, Kout, Vout> implements Processor<K, V, Kout, V
   }
 
   private void execAsync(KeyValue<Long, KeyValue<K, V>> kv) {
+
+    CompletableFuture.runAsync(
+        () -> fn.accept(kv.value),
+        executorService).whenComplete((aVoid, throwable) -> {
+
+    });
+
     executorService.submit(
         () -> {
           try {
