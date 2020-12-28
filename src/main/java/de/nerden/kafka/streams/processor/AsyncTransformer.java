@@ -58,6 +58,24 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
     this.inflightStore = context.getStateStore(this.inflightStoreName);
     this.failedStore = context.getStateStore(this.failedStoreName);
 
+    // Inflight messages are considered failed after a restart. Move them to failed to they are
+    // re-processed.
+    try (KeyValueIterator<Long, AsyncMessage<K, V>> i = this.inflightStore.all()) {
+      i.forEachRemaining(
+          kv -> {
+            AsyncMessage<K, V> asyncMessage =
+                new AsyncMessage<>(
+                    kv.value.getKey(),
+                    kv.value.getValue(),
+                    kv.value.getOffset(),
+                    kv.value.getNumFails()
+                        + 1); // Increment fails, streaming restarted and it's still inflight -
+            // we
+            // declare it failed
+            this.failedStore.put(kv.key, asyncMessage);
+          });
+    }
+
     this.context.schedule(
         Duration.ofMillis(1000), PunctuationType.WALL_CLOCK_TIME, this::punctuate);
   }
@@ -72,7 +90,6 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
       }
     }
 
-    // TODO
     {
       AsyncMessage<K, V> asyncMessage;
       while ((asyncMessage = failedQueue.poll()) != null) {
@@ -85,7 +102,10 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
 
   private void punctuate(long l) {
     handleFinished();
+    handleFailed();
+  }
 
+  private void handleFailed() {
     try (KeyValueIterator<Long, AsyncMessage<K, V>> all = this.failedStore.all()) {
       while (all.hasNext()) {
         KeyValue<Long, AsyncMessage<K, V>> item = all.next();
