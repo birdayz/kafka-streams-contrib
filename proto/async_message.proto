@@ -5,9 +5,9 @@ package protobuf;
 option java_package = "de.nerden.kafka.streams.proto";
 option java_multiple_files = true;
 
-message RetryMessage {
-    bytes key = 1;
-    bytes value = 2;
+message AsyncMessage {
+    optional bytes key = 1;
+    optional bytes value = 2;
     uint64 offset = 3;
     uint32 num_fails = 4;
 }

@@ -1,6 +1,8 @@
 package de.nerden.kafka.streams.processor;
 
 import com.google.common.truth.Truth;
+import de.nerden.kafka.streams.AsyncMessage;
+import de.nerden.kafka.streams.serde.AsyncMessageSerde;
 import de.nerden.kafka.streams.serde.KeyValueSerde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
@@ -52,6 +54,7 @@ class AsyncTransformerRetryTest {
                       return true;
                     },
                     "inflight",
+                    "failed",
                     1,
                     5000),
             Named.as("async-transform"))
@@ -63,7 +66,14 @@ class AsyncTransformerRetryTest {
         Stores.keyValueStoreBuilder(
             Stores.inMemoryKeyValueStore("inflight"),
             Serdes.Long(),
-            new KeyValueSerde<>(Serdes.String(), Serdes.String())),
+            new AsyncMessageSerde<>(Serdes.String(), Serdes.String())),
+        "async-transform");
+
+    topology.addStateStore(
+        Stores.keyValueStoreBuilder(
+            Stores.inMemoryKeyValueStore("failed"),
+            Serdes.Long(),
+            new AsyncMessageSerde<>(Serdes.String(), Serdes.String())),
         "async-transform");
 
     testDriver = new TopologyTestDriver(topology, new Properties());
