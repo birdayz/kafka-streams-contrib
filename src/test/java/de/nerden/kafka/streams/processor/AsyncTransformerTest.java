@@ -1,11 +1,13 @@
 package de.nerden.kafka.streams.processor;
 
 import com.google.common.truth.Truth;
+import de.nerden.kafka.streams.MoreTransformers;
 import de.nerden.kafka.streams.serde.AsyncMessageSerde;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.TestInputTopic;
@@ -13,8 +15,10 @@ import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,19 +34,13 @@ class AsyncTransformerTest {
   public void setUp() {
     StreamsBuilder bldr = new StreamsBuilder();
     bldr.stream("input-topic", Consumed.with(Serdes.String(), Serdes.String()))
-        .transform(
-            () ->
-                new AsyncTransformer<String, String>(
-                    kv ->
-                        CompletableFuture.supplyAsync(
-                            () -> {
-                              return kv;
-                            }),
-                    failed -> false,
-                    "inflight",
-                    1,
-                    5000),
-            Named.as("async-transform"))
+        .transform(MoreTransformers.Async(
+            Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("async")
+                .withLoggingDisabled()
+                .withKeySerde(Serdes.String())
+                .withValueSerde(Serdes.String()),
+            msg -> CompletableFuture.supplyAsync(() -> msg),
+            decider -> false), Named.as("async-transform"))
         .to("output-topic", Produced.with(Serdes.String(), Serdes.String()));
 
     Topology topology = bldr.build();
