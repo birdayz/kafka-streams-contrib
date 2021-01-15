@@ -18,7 +18,6 @@ java_library(
     ],
     deps = [
         "//proto",
-        "@maven//:com_google_guava_guava",
         "@maven//:com_google_protobuf_protobuf_java",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_kafka_kafka_clients",
@@ -47,7 +46,6 @@ java_junit5_test(
     deps = [
         ":library",
         "//proto",
-        "@maven//:com_google_guava_guava",
         "@maven//:com_google_protobuf_protobuf_java",
         "@maven//:com_google_truth_truth",
         "@maven//:org_apache_kafka_kafka_clients",
