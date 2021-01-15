@@ -2,7 +2,7 @@ package de.nerden.kafka.streams.serde;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import de.nerden.kafka.streams.AsyncMessage;
+import de.nerden.kafka.streams.processor.AsyncTransformer.AsyncMessage;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;

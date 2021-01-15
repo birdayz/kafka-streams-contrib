@@ -1,6 +1,5 @@
 package de.nerden.kafka.streams.processor;
 
-import de.nerden.kafka.streams.AsyncMessage;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -134,4 +133,45 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
 
   @Override
   public void close() {}
+
+  public static class AsyncMessage<K, V> {
+    private K key;
+    private V value;
+    private long offset;
+    private int numFails;
+    private Throwable exception;
+
+    public AsyncMessage(K key, V value, long offset, int numFails, Throwable exception) {
+      this.key = key;
+      this.value = value;
+      this.offset = offset;
+      this.numFails = numFails;
+      this.exception = exception;
+    }
+
+    public V getValue() {
+      return value;
+    }
+
+    public long getOffset() {
+      return offset;
+    }
+
+    public int getNumFails() {
+      return numFails;
+    }
+
+    public K getKey() {
+      return key;
+    }
+
+    public Throwable getThrowable() {
+      return exception;
+    }
+
+    public void addFail(Throwable t) {
+      this.exception = t;
+      this.numFails++;
+    }
+  }
 }

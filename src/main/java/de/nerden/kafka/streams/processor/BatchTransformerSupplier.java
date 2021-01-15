@@ -1,6 +1,6 @@
 package de.nerden.kafka.streams.processor;
 
-import de.nerden.kafka.streams.BatchKey;
+import de.nerden.kafka.streams.processor.BatchingTransformer.BatchKey;
 import de.nerden.kafka.streams.serde.BatchKeySerde;
 import java.util.Collections;
 import java.util.List;

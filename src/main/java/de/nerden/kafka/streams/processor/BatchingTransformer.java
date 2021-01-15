@@ -1,11 +1,11 @@
 package de.nerden.kafka.streams.processor;
 
-import de.nerden.kafka.streams.BatchKey;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Transformer;
@@ -98,5 +98,36 @@ public class BatchingTransformer<K, V> implements Transformer<K, V, KeyValue<K, 
     this.entries = null;
     this.punctuation.cancel();
     this.punctuation = null;
+  }
+
+  public static class BatchKey<K> {
+    private K key;
+    private long offset;
+
+    public BatchKey(K key, long offset) {
+      this.key = key;
+      this.offset = offset;
+    }
+
+    public K getKey() {
+      return key;
+    }
+
+    public long getOffset() {
+      return offset;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      BatchKey<?> batchKey = (BatchKey<?>) o;
+      return offset == batchKey.offset && Objects.equals(key, batchKey.key);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(key, offset);
+    }
   }
 }
