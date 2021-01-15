@@ -2,7 +2,7 @@ package de.nerden.kafka.streams.serde;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import de.nerden.kafka.streams.BatchKey;
+import de.nerden.kafka.streams.processor.BatchingTransformer.BatchKey;
 import java.util.Base64;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;

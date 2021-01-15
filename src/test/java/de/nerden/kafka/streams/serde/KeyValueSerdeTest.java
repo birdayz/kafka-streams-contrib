@@ -54,4 +54,6 @@ class KeyValueSerdeTest {
 
     Truth.assertThat(deserialized).isEqualTo(input);
   }
+
+  // Add test to check if re-processing after re-init works.
 }

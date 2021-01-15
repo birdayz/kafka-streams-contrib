@@ -22,8 +22,9 @@ java_proto_library(
 proto_library(
     name = "kafka_proto",
     srcs = [
-        ":keyvalue.proto",
+        ":async_message.proto",
         ":batch.proto",
+        ":keyvalue.proto",
     ],
     deps = [
         "@com_google_protobuf//:duration_proto",

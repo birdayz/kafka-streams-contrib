@@ -1,2 +1,2 @@
 build --disk_cache=/tmp --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11 --protocopt=--experimental_allow_proto3_optional
-test --disk_cache=/tmp --test_output=all
+test --disk_cache=/tmp --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11 --protocopt=--experimental_allow_proto3_optional --test_summary=detailed --test_output=all

@@ -1,7 +1,7 @@
 package de.nerden.kafka.streams.serde;
 
 import com.google.common.truth.Truth;
-import de.nerden.kafka.streams.BatchKey;
+import de.nerden.kafka.streams.processor.BatchingTransformer.BatchKey;
 import org.apache.kafka.common.serialization.Serdes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
