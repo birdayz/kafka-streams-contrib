@@ -30,6 +30,7 @@ maven_install(
         "org.junit.platform:junit-platform-engine:1.5.0",
         "org.junit.platform:junit-platform-launcher:1.5.0",
         "org.junit.platform:junit-platform-suite-api:1.5.0",
+        "org.apache.commons:commons-lang3:jar:3.11",
     ],
     repositories = [
         "https://jcenter.bintray.com/",

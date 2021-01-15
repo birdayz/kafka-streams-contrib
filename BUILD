@@ -20,6 +20,7 @@ java_library(
         "//proto",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_protobuf_protobuf_java",
+        "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_kafka_kafka_clients",
         "@maven//:org_apache_kafka_kafka_streams",
         "@maven//:org_slf4j_slf4j_api",

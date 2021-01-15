@@ -1,11 +1,18 @@
 package de.nerden.kafka.streams.processor;
 
 import com.google.common.truth.Truth;
-import de.nerden.kafka.streams.AsyncMessage;
 import de.nerden.kafka.streams.serde.AsyncMessageSerde;
-import de.nerden.kafka.streams.serde.KeyValueSerde;
+import java.time.Duration;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.*;
+import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.TestInputTopic;
+import org.apache.kafka.streams.TestOutputTopic;
+import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Produced;
@@ -14,12 +21,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 
 class AsyncTransformerRetryTest {
 
@@ -50,11 +51,8 @@ class AsyncTransformerRetryTest {
                               retryNo++;
                               throw new RuntimeException("random network fail");
                             }),
-                    (retryMessage, e) -> {
-                      return true;
-                    },
+                    (retryMessage) -> true,
                     "inflight",
-                    "failed",
                     1,
                     5000),
             Named.as("async-transform"))

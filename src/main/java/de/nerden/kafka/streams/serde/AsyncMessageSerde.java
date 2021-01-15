@@ -7,7 +7,6 @@ import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
-import org.apache.kafka.streams.KeyValue;
 
 public class AsyncMessageSerde<K, V> implements Serde<AsyncMessage<K, V>> {
 
@@ -40,13 +39,14 @@ public class AsyncMessageSerde<K, V> implements Serde<AsyncMessage<K, V>> {
         de.nerden.kafka.streams.proto.AsyncMessage asyncMessage =
             de.nerden.kafka.streams.proto.AsyncMessage.parseFrom(data);
 
-        return new AsyncMessage<K, V>(
+        return new AsyncMessage<>(
             this.keyDeserializer.deserialize(
                 topic, asyncMessage.hasKey() ? asyncMessage.getKey().toByteArray() : null),
             this.valueDeserializer.deserialize(
                 topic, asyncMessage.hasValue() ? asyncMessage.getValue().toByteArray() : null),
             asyncMessage.getOffset(),
-            asyncMessage.getNumFails());
+            asyncMessage.getNumFails(),
+            null);
       } catch (InvalidProtocolBufferException e) {
         throw new SerializationException("Failed to deserialize proto", e);
       }
