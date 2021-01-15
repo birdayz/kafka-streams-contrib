@@ -34,13 +34,15 @@ class AsyncTransformerTest {
   public void setUp() {
     StreamsBuilder bldr = new StreamsBuilder();
     bldr.stream("input-topic", Consumed.with(Serdes.String(), Serdes.String()))
-        .transform(MoreTransformers.Async(
-            Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("async")
-                .withLoggingDisabled()
-                .withKeySerde(Serdes.String())
-                .withValueSerde(Serdes.String()),
-            msg -> CompletableFuture.supplyAsync(() -> msg),
-            decider -> false), Named.as("async-transform"))
+        .transform(
+            MoreTransformers.Async(
+                Materialized.<String, String, KeyValueStore<Bytes, byte[]>>as("async")
+                    .withLoggingDisabled()
+                    .withKeySerde(Serdes.String())
+                    .withValueSerde(Serdes.String()),
+                msg -> CompletableFuture.supplyAsync(() -> msg),
+                decider -> false),
+            Named.as("async-transform"))
         .to("output-topic", Produced.with(Serdes.String(), Serdes.String()));
 
     Topology topology = bldr.build();

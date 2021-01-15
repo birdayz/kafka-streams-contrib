@@ -26,9 +26,8 @@ public class MoreTransformers {
       Materialized<K, V, KeyValueStore<Bytes, byte[]>> materialized,
       Function<KeyValue<K, V>, CompletableFuture<KeyValue<K, V>>> fn,
       Predicate<AsyncMessage<K, V>> retryDecider) {
-    return Async(materialized, fn, retryDecider,
-        DEFAULT_ASYNC_MAX_INFLIGHT,
-        DEFAULT_ASYNC_TIMEOUT_MS);
+    return Async(
+        materialized, fn, retryDecider, DEFAULT_ASYNC_MAX_INFLIGHT, DEFAULT_ASYNC_TIMEOUT_MS);
   }
 
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, V>> Async(
@@ -36,8 +35,7 @@ public class MoreTransformers {
       Function<KeyValue<K, V>, CompletableFuture<KeyValue<K, V>>> fn,
       Predicate<AsyncMessage<K, V>> retryDecider,
       int maxInflight,
-      int timeoutMs
-  ) {
+      int timeoutMs) {
     final MaterializedInternal<K, V, KeyValueStore<Bytes, byte[]>> materializedInternal =
         new MaterializedInternal<>(materialized);
 
@@ -51,8 +49,7 @@ public class MoreTransformers {
           maxInflight,
           timeoutMs,
           fn,
-          retryDecider
-      );
+          retryDecider);
     } else {
       return new AsyncTransformerSupplier<>(
           "async",
@@ -63,12 +60,9 @@ public class MoreTransformers {
           maxInflight,
           timeoutMs,
           fn,
-          retryDecider
-      );
+          retryDecider);
     }
-
   }
-
 
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(
       Materialized<K, V, KeyValueStore<Bytes, byte[]>> materialized) {
@@ -76,12 +70,11 @@ public class MoreTransformers {
   }
 
   /**
-   * @param materialized           Materialization information for the state stored used for
-   *                               batching.
+   * @param materialized Materialization information for the state stored used for batching.
    * @param maxBatchDurationMillis Every time maxBatchDurationMillis passed, batches are released
-   *                               for all keys.
-   * @param maxBatchSizePerKey     When matchBatchSizePerKey records have been collected for a
-   *                               specific key, the batch is forwarded be waited for.
+   *     for all keys.
+   * @param maxBatchSizePerKey When matchBatchSizePerKey records have been collected for a specific
+   *     key, the batch is forwarded be waited for.
    * @return
    */
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(

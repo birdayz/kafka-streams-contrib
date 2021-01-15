@@ -20,7 +20,6 @@ import org.apache.kafka.streams.state.Stores;
 
 public class AsyncTransformerSupplier<K, V> implements TransformerSupplier<K, V, KeyValue<K, V>> {
 
-
   private final String storeName;
   private final Serde<K> keySerde;
   private final Serde<V> valueSerde;
@@ -55,8 +54,8 @@ public class AsyncTransformerSupplier<K, V> implements TransformerSupplier<K, V,
 
   @Override
   public Transformer<K, V, KeyValue<K, V>> get() {
-    return new AsyncTransformer<>(fn, retryDecider, this.storeName, this.maxInflight,
-        this.timeoutMs);
+    return new AsyncTransformer<>(
+        fn, retryDecider, this.storeName, this.maxInflight, this.timeoutMs);
   }
 
   @Override
@@ -65,7 +64,8 @@ public class AsyncTransformerSupplier<K, V> implements TransformerSupplier<K, V,
     if (this.storeSupplier != null) {
       builder =
           Stores.keyValueStoreBuilder(
-              this.storeSupplier, Serdes.Long(),
+              this.storeSupplier,
+              Serdes.Long(),
               new AsyncMessageSerde<>(this.keySerde, this.valueSerde));
     } else {
       builder =
