@@ -15,9 +15,8 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 
 /**
- * Use github.com/birdayz/kaf to test.
- * Set up: "kaf topic create data -p 4"
- * Test/create 100 input messages: "echo -n 'record' | kaf produce data --partitioner jvm --key def -n 100"
+ * Use github.com/birdayz/kaf to test. Set up: "kaf topic create data -p 4" Test/create 100 input
+ * messages: "echo -n 'record' | kaf produce data --partitioner jvm --key def -n 100"
  */
 public class AsyncTransformerExample {
 
