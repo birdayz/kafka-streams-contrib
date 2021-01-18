@@ -69,7 +69,7 @@ java_export(
 
 java_binary(
     name = "async-processor-example",
-    main_class = "de.nerden.kafka.streams.processor.examples.AsyncProcessorExample",
+    main_class = "de.nerden.kafka.streams.processor.examples.AsyncTransformerExample",
     runtime_deps = [
         ":library",
         "@maven//:org_slf4j_slf4j_simple",
