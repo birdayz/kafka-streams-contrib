@@ -9,16 +9,18 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Transformer;
+import org.apache.kafka.streams.processor.Cancellable;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.PunctuationType;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>> {
+
   private ProcessorContext context;
 
-  private Function<KeyValue<K, V>, CompletableFuture<KeyValue<K, V>>> fn;
-  private Predicate<AsyncMessage<K, V>> retryDecider;
+  private final Function<KeyValue<K, V>, CompletableFuture<KeyValue<K, V>>> fn;
+  private final Predicate<AsyncMessage<K, V>> retryDecider;
 
   private final int maxInflight;
   private final int timeoutMs;
@@ -26,17 +28,19 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
   private final String inflightStoreName;
   private KeyValueStore<Long, AsyncMessage<K, V>> inflightStore;
 
-  ConcurrentLinkedQueue<Long> completedQueue = new ConcurrentLinkedQueue<>();
-  ConcurrentLinkedQueue<AsyncMessage<K, V>> failedQueue = new ConcurrentLinkedQueue<>();
+  ConcurrentLinkedQueue<Long> completedQueue;
+  ConcurrentLinkedQueue<AsyncMessage<K, V>> failedQueue;
 
   private Semaphore semaphore;
+
+  private Cancellable punctator;
 
   public AsyncTransformer(
       Function<KeyValue<K, V>, CompletableFuture<KeyValue<K, V>>> fn,
       Predicate<AsyncMessage<K, V>> retryDecider,
       String inflightStoreName,
       int maxInflight,
-      int timeoutMs) { // TODO: Decider func
+      int timeoutMs) {
     this.fn = fn;
     this.retryDecider = retryDecider;
     this.inflightStoreName = inflightStoreName;
@@ -48,6 +52,9 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
   public void init(ProcessorContext context) {
     this.semaphore = new Semaphore(this.maxInflight);
     this.context = context;
+
+    this.completedQueue = new ConcurrentLinkedQueue<>();
+    this.failedQueue = new ConcurrentLinkedQueue<>();
 
     this.inflightStore = context.getStateStore(this.inflightStoreName);
 
@@ -63,14 +70,34 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
           });
     }
 
-    this.context.schedule(
-        Duration.ofMillis(1000), PunctuationType.WALL_CLOCK_TIME, this::punctuate);
+    // Run it regularly to clear successful often
+    punctator =
+        this.context.schedule(
+            Duration.ofMillis(1000), PunctuationType.WALL_CLOCK_TIME, this::punctuate);
+  }
+
+  @Override
+  public KeyValue<K, V> transform(K key, V value) {
+    handleFinished();
+    runAsync(new AsyncMessage<>(key, value, context.offset(), 0, null));
+
+    return null;
+  }
+
+  private void punctuate(long l) {
+    handleFinished();
+    handleFailed();
   }
 
   private void handleFinished() {
     Long offset;
     while ((offset = completedQueue.poll()) != null) {
       AsyncMessage<K, V> asyncMessage = this.inflightStore.get(offset);
+      // TODO what if does not exist in inflight?
+      if (asyncMessage == null) {
+        throw new RuntimeException(
+            "Could not find message in inflightstore..this should not happen");
+      }
       context.forward(asyncMessage.getKey(), asyncMessage.getValue());
       this.inflightStore.delete(offset);
     }
@@ -88,28 +115,14 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
     }
   }
 
-  @Override
-  public KeyValue<K, V> transform(K key, V value) {
-    handleFinished();
-    runAsync(new AsyncMessage<>(key, value, context.offset(), 0, null));
-
-    return null;
-  }
-
-  private void punctuate(long l) {
-    handleFinished();
-    handleFailed();
-  }
-
   // Exec func with the record as input, move entries to queues on completion/failure
   // Must only be called from StreamThread
   private void runAsync(AsyncMessage<K, V> asyncMessage) {
     K key = asyncMessage.getKey();
     V value = asyncMessage.getValue();
+    long offset = this.context.offset();
 
     this.semaphore.acquireUninterruptibly();
-
-    long offset = this.context.offset();
 
     this.inflightStore.put(offset, asyncMessage);
 
@@ -132,12 +145,20 @@ public class AsyncTransformer<K, V> implements Transformer<K, V, KeyValue<K, V>>
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    if (punctator != null) {
+      punctator.cancel();
+    }
+
+    this.completedQueue = null;
+    this.failedQueue = null;
+  }
 
   public static class AsyncMessage<K, V> {
-    private K key;
-    private V value;
-    private long offset;
+
+    private final K key;
+    private final V value;
+    private final long offset;
     private int numFails;
     private Throwable exception;
 
