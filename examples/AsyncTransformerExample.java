@@ -47,7 +47,7 @@ public class AsyncTransformerExample {
                 retry -> false))
         .peek(
             (key, value) -> {
-              System.out.printf("Received async-processed %s=%s\n");
+              System.out.printf("Received async-processed %s=%s\n", key, value);
             });
 
     KafkaStreams streams = new KafkaStreams(builder.build(), getProperties());
