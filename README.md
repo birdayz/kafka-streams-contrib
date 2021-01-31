@@ -19,7 +19,7 @@ implementation 'de.nerden:kafka-streams-contrib:0.3.5'
 <dependency>
   <groupId>de.nerden</groupId>
   <artifactId>kafka-streams-contrib</artifactId>
-  <version>0.3.4</version>
+  <version>0.3.5</version>
   <type>pom</type>
 </dependency>
 ```
