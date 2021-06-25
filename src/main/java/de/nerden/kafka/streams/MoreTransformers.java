@@ -71,12 +71,11 @@ public class MoreTransformers {
   }
 
   /**
-   * @param materialized           Materialization information for the state stored used for
-   *                               batching.
+   * @param materialized Materialization information for the state stored used for batching.
    * @param maxBatchDurationMillis Every time maxBatchDurationMillis passed, batches are released
-   *                               for all keys.
-   * @param maxBatchSizePerKey     When matchBatchSizePerKey records have been collected for a
-   *                               specific key, the batch is forwarded be waited for.
+   *     for all keys.
+   * @param maxBatchSizePerKey When matchBatchSizePerKey records have been collected for a specific
+   *     key, the batch is forwarded be waited for.
    * @return
    */
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(
