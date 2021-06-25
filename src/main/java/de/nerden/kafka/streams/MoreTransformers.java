@@ -12,6 +12,7 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.kafka.streams.kstream.internals.MaterializedInternal;
+import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 public class MoreTransformers {
@@ -70,11 +71,12 @@ public class MoreTransformers {
   }
 
   /**
-   * @param materialized Materialization information for the state stored used for batching.
+   * @param materialized           Materialization information for the state stored used for
+   *                               batching.
    * @param maxBatchDurationMillis Every time maxBatchDurationMillis passed, batches are released
-   *     for all keys.
-   * @param maxBatchSizePerKey When matchBatchSizePerKey records have been collected for a specific
-   *     key, the batch is forwarded be waited for.
+   *                               for all keys.
+   * @param maxBatchSizePerKey     When matchBatchSizePerKey records have been collected for a
+   *                               specific key, the batch is forwarded be waited for.
    * @return
    */
   public static <K, V> TransformerSupplier<K, V, KeyValue<K, List<V>>> Batch(
@@ -94,7 +96,7 @@ public class MoreTransformers {
           maxBatchSizePerKey);
     } else if (materializedInternal.storeSupplier() != null) {
       return new BatchTransformerSupplier<>(
-          materializedInternal.storeName(),
+          (KeyValueBytesStoreSupplier) materializedInternal.storeSupplier(),
           materializedInternal.keySerde(),
           materializedInternal.valueSerde(),
           materializedInternal.loggingEnabled(),
