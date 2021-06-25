@@ -36,6 +36,7 @@ public class BatchTransformerSupplier<K, V>
     this.changeLoggingEnabled = changeLoggingEnabled;
     this.maxBatchDurationMillis = maxBatchDurationMillis;
     this.maxBatchSizePerKey = maxBatchSizePerKey;
+    this.storeName = this.storeSupplier.name();
   }
 
   public BatchTransformerSupplier(

@@ -85,17 +85,17 @@ public class MoreTransformers {
     final MaterializedInternal<K, V, KeyValueStore<Bytes, byte[]>> materializedInternal =
         new MaterializedInternal<>(materialized);
 
-    if (materializedInternal.storeName() != null) {
+    if (materializedInternal.storeSupplier() != null) {
       return new BatchTransformerSupplier<>(
-          materializedInternal.storeName(),
+          (KeyValueBytesStoreSupplier) materializedInternal.storeSupplier(),
           materializedInternal.keySerde(),
           materializedInternal.valueSerde(),
           materializedInternal.loggingEnabled(),
           maxBatchDurationMillis,
           maxBatchSizePerKey);
-    } else if (materializedInternal.storeSupplier() != null) {
+    } else if (materializedInternal.storeName() != null) {
       return new BatchTransformerSupplier<>(
-          (KeyValueBytesStoreSupplier) materializedInternal.storeSupplier(),
+          materializedInternal.storeName(),
           materializedInternal.keySerde(),
           materializedInternal.valueSerde(),
           materializedInternal.loggingEnabled(),
