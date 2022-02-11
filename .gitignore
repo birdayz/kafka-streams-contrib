@@ -18,6 +18,7 @@ gradle-app.setting
 /.project
 /.settings
 .ijwb
+*.iml
 /bazel-bin
 /bazel-kafka-streams-contrib
 /bazel-out

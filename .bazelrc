@@ -1,2 +1,10 @@
-build --disk_cache=/tmp --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11 --protocopt=--experimental_allow_proto3_optional
+build --disk_cache=/tmp --protocopt=--experimental_allow_proto3_optional
+build --java_language_version=17
+build --java_runtime_version=remotejdk_17
+build --tool_java_language_version=17
+build --tool_java_runtime_version=remotejdk_17
 test --disk_cache=/tmp --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11 --protocopt=--experimental_allow_proto3_optional --test_summary=detailed --test_output=all
+test --java_language_version=17
+test --java_runtime_version=remotejdk_17
+test --tool_java_language_version=17
+test --tool_java_runtime_version=remotejdk_17
